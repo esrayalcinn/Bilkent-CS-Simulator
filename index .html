@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>compile_life — a CS student survival sim</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="sidebar-title">courses taken<br>this semester</div>
+      <div class="course-list" id="courses"></div>
+    </aside>
+
+    <div class="main">
+
+      <header class="topbar">
+        <div class="brand">compile_life<span class="cursor">_</span></div>
+        <div class="progress">
+          <span class="progress-label">y</span><span id="year" class="progress-value">1</span>
+          <span class="progress-sep">·</span>
+          <span class="progress-label">sem</span><span id="semester" class="progress-value">1</span>
+          <span class="progress-sep">·</span>
+          <span class="progress-label">day</span><span id="day" class="progress-value">1</span>
+        </div>
+      </header>
+
+      <section class="stats" id="stats"></section>
+
+      <main class="window" id="scene">
+        <div class="window-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="window-title" id="window-title">day_log.txt</span>
+        </div>
+        <div class="window-body" id="window-body"></div>
+      </main>
+
+      <footer class="hint" id="hint">choose an action to advance the day</footer>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

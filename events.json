@@ -1,0 +1,118 @@
+[
+  {
+    "id": "cs101_lab_stuck",
+    "course": "CS101",
+    "text": "Lab session: your assigned task doesn't compile and the deadline is in twenty minutes.",
+    "choices": [
+      {
+        "label": "Ask the TA",
+        "effects": { "gpa": 0.02, "sanity": -4 },
+        "results": [
+          "The TA points out a missing semicolon. You want to disappear.",
+          "The TA walks you through it, mostly. You still owe them one."
+        ]
+      },
+      {
+        "label": "Ask a friend nearby",
+        "outcomes": [
+          { "weight": 0.7, "effects": { "gpa": 0.03, "sanity": -2 }, "results": ["Their fix works. Nobody asks how."] },
+          { "weight": 0.3, "effects": { "gpa": -0.12, "sanity": -18 }, "results": ["Their fix is suspiciously identical to another submission. You get a very uncomfortable email about academic integrity."] }
+        ]
+      },
+      {
+        "label": "Figure it out alone",
+        "effects": { "gpa": 0.04, "sanity": -10 },
+        "results": ["Twenty minutes and several dead ends later, it compiles. You don't know why. You take it."]
+      }
+    ]
+  },
+  {
+    "id": "cs224_fpga_dead",
+    "course": "CS224",
+    "text": "Lab session: your FPGA board won't power on. There is a faint smell of burnt silicon and a great deal of judgment from your lab partner.",
+    "choices": [
+      {
+        "label": "Buy a new one",
+        "effects": { "budget": -150, "sanity": -5 },
+        "results": ["There goes this month's food budget. The board works. You, less so."]
+      },
+      {
+        "label": "Borrow one from a friend",
+        "effects": { "sanity": -10, "gpa": 0.02 },
+        "results": ["They say it's fine. It is not fine. This comes up at every group dinner from now on."]
+      },
+      {
+        "label": "Tell the TA it was already broken",
+        "effects": { "sanity": 5, "gpa": -0.05 },
+        "results": ["It works. You feel a little guilty. Mostly you feel free."]
+      }
+    ]
+  },
+  {
+    "id": "bus_late",
+    "text": "The campus shuttle is 40 minutes late and you have a demo in 15.",
+    "choices": [
+      {
+        "label": "Run the last 2km",
+        "effects": { "sanity": -8 },
+        "results": [
+          "You make it with a minute to spare. Your legs file a formal complaint.",
+          "You arrive drenched in sweat right as they call your name. Iconic, in a way."
+        ]
+      },
+      {
+        "label": "Message the instructor",
+        "effects": { "gpa": -0.02, "sanity": 4 },
+        "results": ["They've seen this before. Everyone has seen this before."]
+      }
+    ]
+  },
+  {
+    "id": "all_nighter",
+    "text": "The assignment is due at 9am. It is currently 1am and you have completed roughly a third of it.",
+    "choices": [
+      {
+        "label": "Pull an all-nighter",
+        "effects": { "gpa": 0.06, "sanity": -18 },
+        "results": ["You submit at 11:59 pm with the confidence of someone who has seen things."]
+      },
+      {
+        "label": "Submit what you have",
+        "effects": { "gpa": -0.08, "sanity": 6 },
+        "results": ["Sometimes you just have to accept your fate and sleep. It is glorious."]
+      }
+    ]
+  },
+  {
+    "id": "group_project",
+    "text": "Your group project teammate has pushed a commit titled 'fixed everything :)'. It has not fixed everything.",
+    "choices": [
+      {
+        "label": "Rewrite their part yourself",
+        "effects": { "gpa": 0.03, "sanity": -12 },
+        "results": ["It works now. You will never mention this to them. They will never ask."]
+      },
+      {
+        "label": "Confront them about it",
+        "effects": { "sanity": -6 },
+        "results": ["The group chat goes quiet for three hours. Something shifts. Progress, maybe."]
+      }
+    ]
+  },
+  {
+    "id": "food_budget",
+    "text": "You check your account balance before grocery shopping. It is lower than expected. It is always lower than expected.",
+    "choices": [
+      {
+        "label": "Pasta for the week",
+        "effects": { "budget": 20, "sanity": -5 },
+        "results": ["Efficient. Sad. Effective. You have become a cliche and you know it."]
+      },
+      {
+        "label": "Ask family for a top-up",
+        "effects": { "budget": 100, "sanity": -8 },
+        "results": ["They send it, along with several questions about your life choices."]
+      }
+    ]
+  }
+]
