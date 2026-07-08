@@ -111,7 +111,7 @@
   {
     "id": "math102_class_question",
     "course": "MATH102",
-    "text": "Instructor Cocan Ketman stares directly at you and asks you to answer the question.",
+    "text": "Math102 instructor Cocan Ketman stares directly at you and asks you to answer the question.",
     "choices": [
       {
         "label": "Admit you don't know",
