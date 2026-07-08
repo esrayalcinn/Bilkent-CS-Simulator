@@ -257,6 +257,68 @@ button.primary {
   margin-top: 4px;
 }
 
+.track {
+  position: relative;
+  height: 40px;
+  margin-top: 1.75rem;
+}
+
+.track-line {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+}
+
+.track-fill {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.track-tick {
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid var(--border);
+}
+
+.track-tick.passed {
+  border-color: var(--accent);
+}
+
+.track-label {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.track-dot {
+  position: absolute;
+  top: -3px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(232, 163, 61, 0.18);
+  transition: left 0.35s ease;
+}
+
 .hint {
   text-align: center;
   font-family: var(--font-mono);

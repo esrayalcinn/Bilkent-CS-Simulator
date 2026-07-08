@@ -3,7 +3,7 @@ const SEMESTER_LENGTH = 16;  // days per semester
 const MAX_YEARS = 2;         // scope: only years 1-2 are built right now
 const EVENT_CHANCE = 0.45;   // chance a random event fires on an ordinary day
 
-// courses per "year-semester" key
+// courses per "year-semester" key — edit this to match whatever sequence you want
 const COURSES = {
   "1-1": ["CS101", "MATH101", "MBG110", "ENG101", "TURK101"],
   "1-2": ["CS102", "MATH102", "MATH132", "ENG102", "TURK102"],
@@ -13,7 +13,7 @@ const COURSES = {
 
 // ---- state ----
 const state = {
-  gpa: 2.5,
+  gpa: 2.0,
   sanity: 70,
   budget: 500,
   day: 1
@@ -49,7 +49,7 @@ const actions = [
     label: "Go out",
     effects: { gpa: -0.03, sanity: 10, budget: -60 },
     results: [
-      "Iced Latte, complaining about courses, and money you didn't really have. Worth it.",
+      "Tea, complaining about finals, and money you didn't really have. Worth it.",
       "You leave your notes at home on purpose. Best decision all week.",
       "Somehow the conversation is still about coursework. You cannot escape it. You laugh anyway."
     ]
@@ -98,6 +98,31 @@ function renderTopBar() {
 
   document.getElementById("courses").innerHTML = currentCourses()
     .map(c => `<div class="course-item">${c}</div>`).join("");
+
+  renderTrack(t);
+}
+
+function renderTrack(t) {
+  const midpoint = Math.floor(SEMESTER_LENGTH / 2);
+  const pct = d => ((d - 1) / (SEMESTER_LENGTH - 1)) * 100;
+  const dotPct = pct(t.dayInSemester);
+
+  const milestones = [
+    { day: 1, label: "start" },
+    { day: midpoint, label: "midterms" },
+    { day: SEMESTER_LENGTH, label: "finals" }
+  ];
+
+  const ticks = milestones.map(m => `
+    <div class="track-tick ${t.dayInSemester >= m.day ? "passed" : ""}" style="left:${pct(m.day)}%">
+      <span class="track-label">${m.label}</span>
+    </div>`).join("");
+
+  document.getElementById("track").innerHTML = `
+    <div class="track-line"></div>
+    <div class="track-fill" style="width:${dotPct}%"></div>
+    ${ticks}
+    <div class="track-dot" style="left:${dotPct}%"></div>`;
 }
 
 function statCard(label, value, pct, color) {
@@ -147,7 +172,11 @@ function rollScene() {
   }
 
   const courses = currentCourses();
-  const eligible = eventPool.filter(e => !e.course || courses.includes(e.course));
+  const eligible = eventPool.filter(e => {
+    if (e.courses) return e.courses.some(c => courses.includes(c));
+    if (e.course) return courses.includes(e.course);
+    return true;
+  });
   const available = eligible.filter(e => !recentEventIds.includes(e.id));
   const pool = available.length ? available : eligible;
   const fireEvent = pool.length > 0 && Math.random() < EVENT_CHANCE;
@@ -156,7 +185,8 @@ function rollScene() {
     const chosen = pool[Math.floor(Math.random() * pool.length)];
     recentEventIds.push(chosen.id);
     if (recentEventIds.length > 3) recentEventIds.shift();
-    renderChoiceScene(chosen.text, chosen.choices, chosen.course ? `${chosen.course.toLowerCase()}_lab.log` : "random_event.log");
+    const tag = chosen.course || (chosen.courses && chosen.courses[0]);
+    renderChoiceScene(chosen.text, chosen.choices, tag ? `${tag.toLowerCase()}_lab.log` : "random_event.log");
   } else {
     renderChoiceScene("Another day. What do you do with it?", actions, "daily_menu.sh");
   }

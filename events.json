@@ -45,7 +45,7 @@
         "results": ["They say it's fine. It is not fine. This comes up at every group dinner from now on."]
       },
       {
-        "label": "Tell the TA it was already broken",
+        "label": "Tell the TA it is broken and don't do the basys3 part of the lab",
         "effects": { "sanity": 5, "gpa": -0.05 },
         "results": ["It works. You feel a little guilty. Mostly you feel free."]
       }
@@ -64,9 +64,9 @@
         ]
       },
       {
-        "label": "Message the instructor",
+        "label": "Mail the instructor",
         "effects": { "gpa": -0.02, "sanity": 4 },
-        "results": ["They've seen this before. Everyone has seen this before."]
+        "results": ["Not sure if they care but why not. "]
       }
     ]
   },
