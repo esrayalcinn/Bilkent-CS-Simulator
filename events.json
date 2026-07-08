@@ -28,13 +28,16 @@
   },
   {
     "id": "cs224_fpga_dead",
-    "course": "CS224",
+    "courses": [
+      "CS224",
+      "CS223"
+    ],
     "text": "Lab session: your FPGA board won't power on. There is a faint smell of burnt silicon and a great deal of judgment from your lab partner.",
     "choices": [
       {
         "label": "Buy a new one",
         "effects": { "budget": -150, "sanity": -5 },
-        "results": ["There goes this month's food budget. The board works. You, less so."]
+        "results": ["There goes this month's budget. The board works. You, less so."]
       },
       {
         "label": "Borrow one from a friend",
@@ -50,7 +53,7 @@
   },
   {
     "id": "bus_late",
-    "text": "The campus shuttle is 40 minutes late and you have a demo in 15.",
+    "text": "The campus ring is 40 minutes late and you have a demo in 15.",
     "choices": [
       {
         "label": "Run the last 2km",
@@ -85,6 +88,7 @@
   },
   {
     "id": "group_project",
+    "course":"CS102",
     "text": "Your group project teammate has pushed a commit titled 'fixed everything :)'. It has not fixed everything.",
     "choices": [
       {
@@ -96,6 +100,11 @@
         "label": "Confront them about it",
         "effects": { "sanity": -6 },
         "results": ["The group chat goes quiet for three hours. Something shifts. Progress, maybe."]
+      },
+      {
+        "label": "Leave it like that",
+        "effects": { "gpa": -0.1, "sanity": 5},
+        "results": ["It was the right call for your mental but not for your potential"]
       }
     ]
   },
@@ -112,6 +121,11 @@
         "label": "Ask family for a top-up",
         "effects": { "budget": 100, "sanity": -8 },
         "results": ["They send it, along with several questions about your life choices."]
+      },
+      {
+        "label": "Just starve",
+        "effects": { "budget": 0, "sanity": -25 },
+        "results": ["Not sure if that was the best idea"]
       }
     ]
   }

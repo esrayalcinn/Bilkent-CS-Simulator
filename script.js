@@ -13,7 +13,7 @@ const COURSES = {
 
 // ---- state ----
 const state = {
-  gpa: 2.0,
+  gpa: 2.5,
   sanity: 70,
   budget: 500,
   day: 1
