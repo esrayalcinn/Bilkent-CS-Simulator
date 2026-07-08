@@ -1,9 +1,13 @@
-// ---- config ----
 const SEMESTER_LENGTH = 16;  // days per semester
 const MAX_YEARS = 2;         // scope: only years 1-2 are built right now
 const EVENT_CHANCE = 0.45;   // chance a random event fires on an ordinary day
 
-// courses per "year-semester" key — edit this to match whatever sequence you want
+const EXAM_FOCUS_SLOTS = 2;  // how many courses you can "grind it out" for per exam period — the rest force study-smart or wing-it
+const BASE_MASTERY = 70;     // starting per-course grade bar (0-100), roughly a C- — matches the starting 2.0 GPA
+const NEGLECT_THRESHOLD = 5; // days a course can go untouched before its grade starts slipping
+const NEGLECT_RATE = 2;      // mastery points lost per day beyond the threshold
+
+// courses per "year-semester" key
 const COURSES = {
   "1-1": ["CS101", "MATH101", "MBG110", "ENG101", "TURK101"],
   "1-2": ["CS102", "MATH102", "MATH132", "ENG102", "TURK102"],
@@ -16,23 +20,23 @@ const state = {
   gpa: 2.5,
   sanity: 70,
   budget: 500,
-  day: 1
+  day: 1,
+  courseProgress: {},
+  courseLastTouched: {}
 };
 
 let eventPool = [];
 let recentEventIds = [];
+let usedThisSemester = new Set();
+let lastSemesterKey = null;
+let examQueue = [];
+let examFocusPoints = 0;
 let gameOver = false;
 
 const actions = [
   {
     id: "study",
-    label: "Study",
-    effects: { gpa: 0.05, sanity: -6 },
-    results: [
-      "You cram in the library until closing. Your professor might respect you. Your body does not.",
-      "Three hours, two coffees, one existential crisis about your course selection. Progress, technically.",
-      "You actually understand the material for once. Suspicious. Enjoy it while it lasts."
-    ]
+    label: "Study"
   },
   {
     id: "sleep",
@@ -49,7 +53,7 @@ const actions = [
     label: "Go out",
     effects: { gpa: -0.03, sanity: 10, budget: -60 },
     results: [
-      "Iced latte, complaining about finals, and money you didn't really have. Worth it.",
+      "Iced latte, complaining about classes, and money you didn't really have. Worth it.",
       "You leave your notes at home on purpose. Best decision all week.",
       "Somehow the conversation is still about coursework. You cannot escape it. You laugh anyway."
     ]
@@ -96,10 +100,52 @@ function renderTopBar() {
     statCard("sanity", Math.round(state.sanity), state.sanity / 100, colorFor("sanity", state.sanity)) +
     statCard("budget", Math.round(state.budget) + " TL", clamp01(state.budget / 1000), colorFor("budget", state.budget));
 
+  ensureCourseProgress(currentCourses());
   document.getElementById("courses").innerHTML = currentCourses()
-    .map(c => `<div class="course-item">${c}</div>`).join("");
+    .map(c => {
+      const g = letterGrade(state.courseProgress[c]);
+      return `<div class="course-item">${c} <span class="course-grade" style="color:${gradeColor(g)}">${g}</span></div>`;
+    }).join("");
 
   renderTrack(t);
+}
+
+function ensureCourseProgress(courses) {
+  courses.forEach(c => {
+    if (!(c in state.courseProgress)) state.courseProgress[c] = BASE_MASTERY;
+    if (!(c in state.courseLastTouched)) state.courseLastTouched[c] = state.day;
+  });
+}
+
+// grades quietly slip if a course hasn't been engaged with in a while
+function applyNeglect(courses) {
+  courses.forEach(c => {
+    const gap = state.day - (state.courseLastTouched[c] ?? state.day);
+    if (gap > NEGLECT_THRESHOLD) {
+      state.courseProgress[c] = Math.max(0, (state.courseProgress[c] ?? BASE_MASTERY) - NEGLECT_RATE);
+    }
+  });
+}
+
+function letterGrade(mastery) {
+  if (mastery >= 93) return "A";
+  if (mastery >= 90) return "A-";
+  if (mastery >= 87) return "B+";
+  if (mastery >= 83) return "B";
+  if (mastery >= 80) return "B-";
+  if (mastery >= 77) return "C+";
+  if (mastery >= 73) return "C";
+  if (mastery >= 70) return "C-";
+  if (mastery >= 67) return "D+";
+  if (mastery >= 63) return "D";
+  if (mastery >= 60) return "D-";
+  return "F";
+}
+
+function gradeColor(letter) {
+  if (letter.startsWith("A") || letter.startsWith("B")) return "var(--good)";
+  if (letter.startsWith("C")) return "var(--accent)";
+  return "var(--danger)";
 }
 
 function renderTrack(t) {
@@ -154,6 +200,14 @@ function rollScene() {
     return;
   }
 
+  const semesterKey = `${t.year}-${t.semester}`;
+  if (semesterKey !== lastSemesterKey) {
+    usedThisSemester.clear();
+    lastSemesterKey = semesterKey;
+  }
+
+  ensureCourseProgress(currentCourses());
+  if (t.dayInSemester > 1) applyNeglect(currentCourses());
   renderTopBar();
 
   if (t.dayInSemester === 1) {
@@ -162,8 +216,13 @@ function rollScene() {
   }
 
   const midpoint = Math.floor(SEMESTER_LENGTH / 2);
+  const finalsDay = SEMESTER_LENGTH - 1;
   if (t.dayInSemester === midpoint) {
-    renderMidterm(t);
+    renderExamPeriod(t, "Midterms");
+    return;
+  }
+  if (t.dayInSemester === finalsDay) {
+    renderExamPeriod(t, "Finals");
     return;
   }
   if (t.dayInSemester === SEMESTER_LENGTH) {
@@ -173,6 +232,7 @@ function rollScene() {
 
   const courses = currentCourses();
   const eligible = eventPool.filter(e => {
+    if (!e.repeatable && usedThisSemester.has(e.id)) return false;
     if (e.courses) return e.courses.some(c => courses.includes(c));
     if (e.course) return courses.includes(e.course);
     return true;
@@ -183,6 +243,7 @@ function rollScene() {
 
   if (fireEvent) {
     const chosen = pool[Math.floor(Math.random() * pool.length)];
+    usedThisSemester.add(chosen.id);
     recentEventIds.push(chosen.id);
     if (recentEventIds.length > 3) recentEventIds.shift();
     const tag = chosen.course || (chosen.courses && chosen.courses[0]);
@@ -208,35 +269,74 @@ function renderWelcome(t) {
   document.getElementById("start-semester").onclick = advanceDay;
 }
 
-// scripted midterm event, picks one of the current semester's courses
-function renderMidterm(t) {
-  const courses = currentCourses();
-  const course = courses.length ? pickFrom(courses) : "your classes";
+// walks through every course in the current semester, one study-decision each,
+// before letting the day advance — used for both midterms and finals
+function renderExamPeriod(t, period) {
+  examQueue = [...currentCourses()];
+  examFocusPoints = EXAM_FOCUS_SLOTS;
+  showNextExam(t, period);
+}
 
-  const choices = [
+function showNextExam(t, period) {
+  if (examQueue.length === 0) {
+    advanceDay();
+    return;
+  }
+  const course = examQueue.shift();
+  const choices = examChoices(course, period, examFocusPoints);
+  const focusNote = examFocusPoints > 0
+    ? `You have ${examFocusPoints} all-out cram session${examFocusPoints === 1 ? "" : "s"} left to spend this ${period.toLowerCase()} period.`
+    : `You're out of all-out cram sessions for this period — pick your battles.`;
+  renderChoiceScene(
+    `${period} are coming for ${course}. ${focusNote}`,
+    choices,
+    `${period.toLowerCase()}.txt`,
+    () => showNextExam(t, period)
+  );
+}
+
+function examChoices(course, period, focusAvailable) {
+  const examWord = period === "Finals" ? "final" : "midterm";
+  return [
     {
       label: "Grind it out",
+      courseTarget: course,
+      costsFocus: true,
+      disabled: focusAvailable <= 0,
       effects: { gpa: 0.08, sanity: -20 },
       results: [`You brute-force every past exam you can find for ${course}. It works, but at a cost.`]
     },
     {
       label: "Study smart — spaced review, focus on patterns",
+      courseTarget: course,
       effects: { gpa: 0.06, sanity: -8 },
       results: [`You skip the panic and just review what actually gets tested in ${course}. Efficient.`]
     },
     {
       label: "Wing it",
+      courseTarget: course,
       outcomes: [
-        { weight: 0.4, effects: { gpa: 0.1, sanity: -2 }, results: [`Somehow your guesses on the ${course} midterm land. You will never be able to explain how.`] },
-        { weight: 0.6, effects: { gpa: -0.1, sanity: -15 }, results: [`The ${course} midterm was not a guessing exercise. You find this out the hard way.`] }
+        { weight: 0.4, effects: { gpa: 0.1, sanity: -2 }, results: [`Somehow your guesses on the ${course} ${examWord} land. You will never be able to explain how.`] },
+        { weight: 0.6, effects: { gpa: -0.1, sanity: -15 }, results: [`The ${course} ${examWord} was not a guessing exercise. You find this out the hard way.`] }
       ]
     }
   ];
-
-  renderChoiceScene(`Midterms are coming for ${course}. What's the plan?`, choices, "midterms.txt");
 }
 
 function renderGradesPosted(t) {
+  const courses = currentCourses();
+  const failed = courses.filter(c => (state.courseProgress[c] ?? BASE_MASTERY) < 60);
+
+  if (failed.length > 0) {
+    state.sanity = Math.max(0, state.sanity - failed.length * 8);
+    renderTopBar();
+    if (state.sanity <= 0) { renderBreakdown(); return; }
+  }
+
+  const failText = failed.length
+    ? ` You failed ${failed.join(", ")} — it drags your average down hard, and you already feel it.`
+    : "";
+
   const choices = [
     {
       label: "Accept the curve",
@@ -252,7 +352,7 @@ function renderGradesPosted(t) {
     }
   ];
 
-  renderChoiceScene(`Semester ${t.semester} grades are posted.`, choices, "grades_posted.txt", () => afterGrades(t));
+  renderChoiceScene(`Semester ${t.semester} grades are posted.${failText}`, choices, "grades_posted.txt", () => afterGrades(t));
 }
 
 function afterGrades(t) {
@@ -293,11 +393,50 @@ function renderChoiceScene(text, choices, windowTitle, continueOverride) {
     <p class="scene-text">${text}</p>
     <div class="choices">
       ${choices.map((c, i) => `
-        <button data-i="${i}">${c.label}</button>`).join("")}
+        <button data-i="${i}" ${c.disabled ? "disabled" : ""}>${c.label}${c.disabled ? '<span class="choice-disabled-note">no cram sessions left</span>' : ""}</button>`).join("")}
     </div>`;
 
   body.querySelectorAll("button").forEach(btn => {
-    btn.onclick = () => applyChoice(choices[parseInt(btn.dataset.i)], continueOverride);
+    if (btn.disabled) return;
+    btn.onclick = () => {
+      const choice = choices[parseInt(btn.dataset.i)];
+      if (choice.id === "study") { renderStudyPicker(continueOverride); return; }
+      applyChoice(choice, continueOverride);
+    };
+  });
+}
+
+function renderStudyPicker(continueOverride) {
+  const courses = currentCourses();
+  ensureCourseProgress(courses);
+
+  document.getElementById("window-title").textContent = "choose_course.txt";
+  document.getElementById("hint").textContent = "choose an action to advance the day";
+
+  const body = document.getElementById("window-body");
+  body.innerHTML = `
+    <p class="scene-text">Which class are you spending today on?</p>
+    <div class="choices">
+      ${courses.map(c => {
+        const g = letterGrade(state.courseProgress[c]);
+        return `<button data-c="${c}">${c} <span class="choice-grade" style="color:${gradeColor(g)}">${g}</span></button>`;
+      }).join("")}
+    </div>`;
+
+  body.querySelectorAll("button").forEach(btn => {
+    btn.onclick = () => {
+      const course = btn.dataset.c;
+      const choice = {
+        courseTarget: course,
+        effects: { gpa: 0.05, sanity: -6 },
+        results: [
+          `You spend the day buried in ${course} problem sets. Progress, probably.`,
+          `${course} finally starts clicking. Or you're just too tired to notice it doesn't.`,
+          `You review ${course} notes until the words stop meaning anything.`
+        ]
+      };
+      applyChoice(choice, continueOverride);
+    };
   });
 }
 
@@ -330,6 +469,18 @@ function applyChoice(choice, continueOverride) {
   state.gpa = Math.max(0, Math.min(4, Math.round(state.gpa * 100) / 100));
   state.sanity = Math.max(0, Math.min(100, Math.round(state.sanity)));
   state.budget = Math.round(state.budget);
+
+  if (choice.courseTarget && effects.gpa) {
+    const delta = Math.round(effects.gpa * 100);
+    const cur = state.courseProgress[choice.courseTarget] ?? BASE_MASTERY;
+    state.courseProgress[choice.courseTarget] = Math.max(0, Math.min(100, cur + delta));
+  }
+  if (choice.courseTarget) {
+    state.courseLastTouched[choice.courseTarget] = state.day;
+  }
+  if (choice.costsFocus) {
+    examFocusPoints = Math.max(0, examFocusPoints - 1);
+  }
 
   renderTopBar();
 

@@ -67,6 +67,39 @@ body {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.course-grade {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.choice-grade {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  float: right;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  border-color: var(--border);
+  background: var(--panel-alt);
+}
+
+.choice-disabled-note {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 4px;
 }
 
 .main {
