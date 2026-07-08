@@ -109,6 +109,36 @@
     ]
   },
   {
+    "id": "math102_class_question",
+    "course": "MATH102",
+    "text": "Instructor Cocan Ketman stares directly at you and asks you to answer the question.",
+    "choices": [
+      {
+        "label": "Admit you don't know",
+        "effects": { "gpa": -0.05, "sanity": -10 },
+        "results": [
+          "You admit you have no idea. Ketman's silence somehow lands harder than a wrong answer would have.",
+          "\"Interesting,\" he says, in the tone of someone who is not interested. The class remembers this for weeks."
+        ]
+      },
+      {
+        "label": "Try your best",
+        "condition": {
+          "stat": "gpa",
+          "min": 2.5,
+          "pass": {
+            "effects": { "gpa": 0.04, "sanity": -3 },
+            "results": ["Somehow you land it. Ketman gives the smallest possible nod of approval. You'll take it."]
+          },
+          "fail": {
+            "effects": { "gpa": -0.03, "sanity": -8 },
+            "results": ["You give it a real shot and get it wrong anyway. Ketman moves on without comment, which is somehow worse."]
+          }
+        }
+      }
+    ]
+  },
+  {
     "id": "food_budget",
     "text": "You check your account balance before grocery shopping. It is lower than expected. It is always lower than expected.",
     "choices": [

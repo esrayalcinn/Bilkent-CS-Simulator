@@ -13,7 +13,7 @@ const COURSES = {
 
 // ---- state ----
 const state = {
-  gpa: 2.0,
+  gpa: 2.5,
   sanity: 70,
   budget: 500,
   day: 1
@@ -301,8 +301,13 @@ function renderChoiceScene(text, choices, windowTitle, continueOverride) {
   });
 }
 
-// resolves a choice — handles both fixed-effect and weighted-outcome choices
+// resolves a choice — handles fixed-effect, weighted-outcome, and stat-conditional choices
 function resolveChoice(choice) {
+  if (choice.condition) {
+    const value = state[choice.condition.stat];
+    const branch = value >= choice.condition.min ? choice.condition.pass : choice.condition.fail;
+    return { effects: branch.effects || {}, result: pickFrom(branch.results) };
+  }
   if (choice.outcomes) {
     let r = Math.random();
     for (const o of choice.outcomes) {
