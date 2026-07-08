@@ -72,7 +72,7 @@
   },
   {
     "id": "all_nighter",
-    "text": "The assignment is due at 9am. It is currently 1am and you have completed roughly a third of it.",
+    "text": "The assignment is due at 12pm. It is currently 1am and you have completed roughly a third of it.",
     "choices": [
       {
         "label": "Pull an all-nighter",
@@ -124,7 +124,7 @@
       },
       {
         "label": "Just starve",
-        "effects": { "budget": 0, "sanity": -25 },
+        "effects": { "sanity": -25 },
         "results": ["Not sure if that was the best idea"]
       }
     ]

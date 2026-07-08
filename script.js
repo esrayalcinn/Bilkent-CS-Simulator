@@ -49,7 +49,7 @@ const actions = [
     label: "Go out",
     effects: { gpa: -0.03, sanity: 10, budget: -60 },
     results: [
-      "Tea, complaining about finals, and money you didn't really have. Worth it.",
+      "Iced latte, complaining about finals, and money you didn't really have. Worth it.",
       "You leave your notes at home on purpose. Best decision all week.",
       "Somehow the conversation is still about coursework. You cannot escape it. You laugh anyway."
     ]
