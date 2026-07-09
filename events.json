@@ -14,10 +14,24 @@
       },
       {
         "label": "Ask a friend nearby",
-        "outcomes": [
-          { "weight": 0.7, "effects": { "gpa": 0.03, "sanity": -2 }, "results": ["Their fix works. Nobody asks how."] },
-          { "weight": 0.3, "effects": { "gpa": -0.12, "sanity": -18 }, "results": ["Their fix is suspiciously identical to another submission. You get a very uncomfortable email about academic integrity."] }
-        ]
+        "condition": {
+          "stat": "social",
+          "min": 40,
+          "pass": {
+            "effects": { "gpa": 0.03, "sanity": -2, "social": 3 },
+            "results": [
+              "They lean over, spot the bug, and joke about it. You fix it with five minutes to spare. Perks of having friends.",
+              "They discreetly move their computer screen toward you. It's a lifesaver. You owe them a coffee."
+            ]
+          },
+          "fail": {
+            "effects": { "sanity": -8, "social": -2 },
+            "results": [
+              "They give you a weird look and mumble that they are 'in the zone' and can't help. The silence is deafening.",
+              "You lean over to ask, but realize you haven't spoken to them all semester. They pretend not to hear you."
+            ]
+          }
+        }
       },
       {
         "label": "Figure it out alone",
@@ -27,12 +41,12 @@
     ]
   },
   {
-    "id": "cs224_fpga_dead",
+    "id": "fpga_dead",
     "courses": [
       "CS224",
       "CS223"
     ],
-    "text": "Lab session: your FPGA board won't power on. There is a faint smell of burnt silicon and a great deal of judgment from your lab partner.",
+    "text": "Lab session: your FPGA board won't power on. There is a faint smell of burnt silicon.",
     "choices": [
       {
         "label": "Buy a new one",
@@ -41,8 +55,24 @@
       },
       {
         "label": "Borrow one from a friend",
-        "effects": { "sanity": -10, "gpa": 0.02 },
-        "results": ["They say it's fine. It is not fine. This comes up at every group dinner from now on."]
+        "condition": {
+          "stat": "social",
+          "min": 50,
+          "pass": {
+            "effects": { "sanity": -5, "gpa": 0.02, "social": 5 },
+            "results": [
+              "They actually let you borrow it. They loudly remind you that you owe them your life, but you survive the lab.",
+              "They hand it over with a dramatic sigh. True friendship is sharing hardware in a crisis."
+            ]
+          },
+          "fail": {
+            "effects": { "sanity": -15, "social": -5 },
+            "results": [
+              "You ask, but they just stare at you. 'I need mine,' they say, turning back to their screen. Brutal.",
+              "They laugh, thinking you're joking. When they realize you aren't, the vibe gets incredibly awkward. No board for you."
+            ]
+          }
+        }
       },
       {
         "label": "Tell the TA it is broken and don't do the basys3 part of the lab",
@@ -98,7 +128,7 @@
       },
       {
         "label": "Confront them about it",
-        "effects": { "sanity": -6 },
+        "effects": { "sanity": -6, "social": 4},
         "results": ["The group chat goes quiet for three hours. Something shifts. Progress, maybe."]
       },
       {

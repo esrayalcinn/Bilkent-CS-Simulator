@@ -15,6 +15,17 @@ const COURSES = {
   "2-2": ["CS202", "CS224", "MATH225", "PHYS102", "HUM112"]
 };
 
+// credit weights for GPA calculation
+const COURSE_WEIGHTS = {
+  // Year 1
+  "CS101": 4, "MATH101": 4, "MBG110": 3, "ENG101": 3, "TURK101": 2,
+  "CS102": 4, "MATH102": 4, "MATH132": 3, "ENG102": 3, "TURK102": 2,
+  
+  // Year 2
+  "CS201": 3, "CS223": 4, "HIST200": 4, "PHYS101": 4, "HUM111": 3,
+  "CS202": 3, "CS224": 4, "MATH225": 4, "PHYS102": 4, "HUM112": 3
+};
+
 // ---- state ----
 const state = {
   gpa: 2.5,
@@ -42,7 +53,7 @@ const actions = [
   {
     id: "sleep",
     label: "Sleep",
-    effects: { gpa: -0.02, sanity: 20 },
+    effects: { gpa: -0.02, sanity: 20, social: -10 },
     results: [
       "A full eight hours. It feels vaguely illegal at this point in the semester.",
       "You wake up before noon. A personal record.",
@@ -52,7 +63,7 @@ const actions = [
   {
     id: "goout",
     label: "Go out",
-    effects: { gpa: -0.03, sanity: 10, budget: -60 },
+    effects: { gpa: -0.03, sanity: 10, budget: -60, social: 20 },
     results: [
       "Iced latte, complaining about classes, and money you didn't really have. Worth it.",
       "You leave your notes at home on purpose. Best decision all week.",
@@ -95,12 +106,16 @@ function renderTopBar() {
   document.getElementById("semester").textContent = t.semester;
   document.getElementById("day").textContent = t.dayInSemester;
 
+  // Calculate the new weighted GPA and sync it to the global state
+  const currentGPA = calculateProjectedGPA();
+  state.gpa = currentGPA; 
+
   const el = document.getElementById("stats");
   el.innerHTML =
-    statCard("gpa", state.gpa.toFixed(2), state.gpa / 4, colorFor("gpa", state.gpa)) +
+    statCard("gpa", currentGPA.toFixed(2), currentGPA / 4, colorFor("gpa", currentGPA)) +
     statCard("sanity", Math.round(state.sanity), state.sanity / 100, colorFor("sanity", state.sanity)) +
     statCard("budget", Math.round(state.budget) + " TL", clamp01(state.budget / 1000), colorFor("budget", state.budget)) +
-    statCard("social", Math.round(state.social), state.social / 100, colorFor("social", state.social)); // <-- Add this line
+    statCard("social", Math.round(state.social), state.social / 100, colorFor("social", state.social));
 
   ensureCourseProgress(currentCourses());
   document.getElementById("courses").innerHTML = currentCourses()
@@ -142,6 +157,42 @@ function letterGrade(mastery) {
   if (mastery >= 63) return "D";
   if (mastery >= 60) return "D-";
   return "F";
+}
+
+// Converts 0-100 mastery into a standard 4.0 scale point value
+function masteryToGPA(mastery) {
+  if (mastery >= 93) return 4.0;
+  if (mastery >= 90) return 3.7;
+  if (mastery >= 87) return 3.3;
+  if (mastery >= 83) return 3.0;
+  if (mastery >= 80) return 2.7;
+  if (mastery >= 77) return 2.3;
+  if (mastery >= 73) return 2.0;
+  if (mastery >= 70) return 1.7;
+  if (mastery >= 67) return 1.3;
+  if (mastery >= 63) return 1.0;
+  if (mastery >= 60) return 0.5;
+  return 0.0;
+}
+
+// Calculates the real-time GPA using course credit weights
+function calculateProjectedGPA() {
+  const courses = currentCourses();
+  if (courses.length === 0) return state.gpa; 
+
+  let totalGradePoints = 0;
+  let totalCredits = 0;
+
+  courses.forEach(c => {
+    const mastery = state.courseProgress[c] ?? BASE_MASTERY;
+    const gradePoint = masteryToGPA(mastery);
+    const credits = COURSE_WEIGHTS[c] || 3; // defaults to 3 if a course is missing
+    
+    totalGradePoints += (gradePoint * credits);
+    totalCredits += credits;
+  });
+
+  return totalCredits === 0 ? 0 : totalGradePoints / totalCredits;
 }
 
 function gradeColor(letter) {
@@ -465,30 +516,34 @@ function resolveChoice(choice) {
 
 function applyChoice(choice, continueOverride) {
   const { effects, result } = resolveChoice(choice);
-
-  for (const key in effects) {
-    state[key] = state[key] + effects[key];
+  if (effects.sanity) state.sanity += effects.sanity;
+  if (effects.budget) state.budget += effects.budget;
+  if (effects.social) state.social += effects.social;
+  if (effects.gpa) {
+    const targetCourse = choice.courseTarget || pickFrom(currentCourses());
+    const masteryDelta = Math.round(effects.gpa * 100); 
+    
+    const cur = state.courseProgress[targetCourse] ?? BASE_MASTERY;
+    state.courseProgress[targetCourse] = Math.max(0, Math.min(100, cur + masteryDelta));
+    state.courseLastTouched[targetCourse] = state.day;
   }
-  state.gpa = Math.max(0, Math.min(4, Math.round(state.gpa * 100) / 100));
+
+  // Bound checks
   state.sanity = Math.max(0, Math.min(100, Math.round(state.sanity)));
   state.budget = Math.round(state.budget);
+  state.social = Math.max(0, Math.min(100, Math.round(state.social)));
 
-  if (choice.courseTarget && effects.gpa) {
-    const delta = Math.round(effects.gpa * 100);
-    const cur = state.courseProgress[choice.courseTarget] ?? BASE_MASTERY;
-    state.courseProgress[choice.courseTarget] = Math.max(0, Math.min(100, cur + delta));
-  }
-  if (choice.courseTarget) {
-    state.courseLastTouched[choice.courseTarget] = state.day;
-  }
   if (choice.costsFocus) {
     examFocusPoints = Math.max(0, examFocusPoints - 1);
   }
 
+  // Rerender the UI
   renderTopBar();
 
+  // Endings check
   if (state.sanity <= 0) { renderBreakdown(); return; }
   if (state.budget <= 0) { renderBankruptcy(); return; }
+  if (state.social <= 0) { renderIsolation(); return; }
 
   renderResult(result, effects, continueOverride || advanceDay);
 }
@@ -561,6 +616,23 @@ function renderBankruptcy() {
       <p class="scene-result">
         Budget hit zero. No more ramen, no more shuttle fare, no more pretending the tea-shop trips were sustainable.
         You have to withdraw for the semester and figure out a job.
+      </p>
+      <button class="primary" id="restart-game">start over →</button>
+    </div>`;
+  document.getElementById("restart-game").onclick = () => location.reload();
+}
+
+function renderIsolation() {
+  gameOver = true;
+  document.getElementById("window-title").textContent = "insufficient_interest.txt";
+  document.getElementById("hint").textContent = "";
+  document.getElementById("courses").innerHTML = "";
+  const body = document.getElementById("window-body");
+  body.innerHTML = `
+    <div class="ending">
+      <div class="ending-title ending-danger">you are completely alone</div>
+      <p class="scene-result">
+        Social hit zero. You lost all <em>interest</em> in hanging out, so your friends <em>withdrawn</em> all their invites. You are officially socially bankrupt.
       </p>
       <button class="primary" id="restart-game">start over →</button>
     </div>`;
