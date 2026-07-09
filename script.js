@@ -357,21 +357,21 @@ function examChoices(course, period, focusAvailable) {
       courseTarget: course,
       costsFocus: true,
       disabled: focusAvailable <= 0,
-      effects: { gpa: 0.08, sanity: -20 },
+      effects: { gpa: 0.08, sanity: -20, social: -5 },
       results: [`You brute-force every past exam you can find for ${course}. It works, but at a cost.`]
     },
     {
       label: "Study smart — spaced review, focus on patterns",
       courseTarget: course,
-      effects: { gpa: 0.06, sanity: -8 },
+      effects: { gpa: 0.06, sanity: -8, social: -5 },
       results: [`You skip the panic and just review what actually gets tested in ${course}. Efficient.`]
     },
     {
       label: "Wing it",
       courseTarget: course,
       outcomes: [
-        { weight: 0.4, effects: { gpa: 0.1, sanity: -2 }, results: [`Somehow your guesses on the ${course} ${examWord} land. You will never be able to explain how.`] },
-        { weight: 0.6, effects: { gpa: -0.1, sanity: -15 }, results: [`The ${course} ${examWord} was not a guessing exercise. You find this out the hard way.`] }
+        { weight: 0.4, effects: { gpa: 0.1, sanity: -2, social: -5 }, results: [`Somehow your guesses on the ${course} ${examWord} land. You will never be able to explain how.`] },
+        { weight: 0.6, effects: { gpa: -0.1, sanity: -15, social: -5 }, results: [`The ${course} ${examWord} was not a guessing exercise. You find this out the hard way.`] }
       ]
     }
   ];
@@ -412,7 +412,8 @@ function renderGradesPosted(t) {
 function afterGrades(t) {
   if (state.gpa < 2.0) {
     repeatYear(t);
-  } else {
+  } 
+  else {
     advanceDay();
   }
 }

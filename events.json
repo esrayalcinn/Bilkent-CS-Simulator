@@ -6,7 +6,7 @@
     "choices": [
       {
         "label": "Ask the TA",
-        "effects": { "gpa": 0.02, "sanity": -4 },
+        "effects": { "gpa": 0.02, "sanity": -4, "social": 5 },
         "results": [
           "The TA points out a missing semicolon. You want to disappear.",
           "The TA walks you through it, mostly. You still owe them one."
@@ -18,14 +18,14 @@
           "stat": "social",
           "min": 40,
           "pass": {
-            "effects": { "gpa": 0.03, "sanity": -2, "social": 3 },
+            "effects": { "gpa": 0.03, "sanity": -2, "social": 5 },
             "results": [
               "They lean over, spot the bug, and joke about it. You fix it with five minutes to spare. Perks of having friends.",
               "They discreetly move their computer screen toward you. It's a lifesaver. You owe them a coffee."
             ]
           },
           "fail": {
-            "effects": { "sanity": -8, "social": -2 },
+            "effects": { "sanity": -8, "social": -10 },
             "results": [
               "They give you a weird look and mumble that they are 'in the zone' and can't help. The silence is deafening.",
               "You lean over to ask, but realize you haven't spoken to them all semester. They pretend not to hear you."
@@ -35,7 +35,7 @@
       },
       {
         "label": "Figure it out alone",
-        "effects": { "gpa": 0.04, "sanity": -10 },
+        "effects": { "gpa": 0.04, "sanity": -10, "social": -5 },
         "results": ["Twenty minutes and several dead ends later, it compiles. You don't know why. You take it."]
       }
     ]
@@ -123,7 +123,7 @@
     "choices": [
       {
         "label": "Rewrite their part yourself",
-        "effects": { "gpa": 0.03, "sanity": -12 },
+        "effects": { "gpa": 0.03, "sanity": -12, "social": -10 },
         "results": ["It works now. You will never mention this to them. They will never ask."]
       },
       {
@@ -133,7 +133,7 @@
       },
       {
         "label": "Leave it like that",
-        "effects": { "gpa": -0.1, "sanity": 5},
+        "effects": { "gpa": -0.1, "sanity": 5, "social": -10},
         "results": ["It was the right call for your mental but not for your potential"]
       }
     ]
