@@ -2,7 +2,7 @@ const SEMESTER_LENGTH = 16;  // days per semester
 const MAX_YEARS = 2;         // scope: only years 1-2 are built right now
 const EVENT_CHANCE = 0.45;   // chance a random event fires on an ordinary day
 
-const EXAM_FOCUS_SLOTS = 2;  // how many courses you can "grind it out" for per exam period — the rest force study-smart or wing-it
+const EXAM_FOCUS_SLOTS = 2;  // how many courses you can "grind it out" for per exam period 
 const BASE_MASTERY = 70;     // starting per-course grade bar (0-100), roughly a C- — matches the starting 2.0 GPA
 const NEGLECT_THRESHOLD = 5; // days a course can go untouched before its grade starts slipping
 const NEGLECT_RATE = 2;      // mastery points lost per day beyond the threshold
@@ -19,6 +19,7 @@ const COURSES = {
 const state = {
   gpa: 2.5,
   sanity: 70,
+  social: 50,
   budget: 500,
   day: 1,
   courseProgress: {},
@@ -98,7 +99,8 @@ function renderTopBar() {
   el.innerHTML =
     statCard("gpa", state.gpa.toFixed(2), state.gpa / 4, colorFor("gpa", state.gpa)) +
     statCard("sanity", Math.round(state.sanity), state.sanity / 100, colorFor("sanity", state.sanity)) +
-    statCard("budget", Math.round(state.budget) + " TL", clamp01(state.budget / 1000), colorFor("budget", state.budget));
+    statCard("budget", Math.round(state.budget) + " TL", clamp01(state.budget / 1000), colorFor("budget", state.budget)) +
+    statCard("social", Math.round(state.social), state.social / 100, colorFor("social", state.social)); // <-- Add this line
 
   ensureCourseProgress(currentCourses());
   document.getElementById("courses").innerHTML = currentCourses()
@@ -185,6 +187,7 @@ function colorFor(key, value) {
   if (key === "sanity") return value < 30 ? "var(--danger)" : value < 60 ? "var(--accent)" : "var(--good)";
   if (key === "gpa") return value < 1.8 ? "var(--danger)" : value < 3 ? "var(--accent)" : "var(--good)";
   if (key === "budget") return value < 0 ? "var(--danger)" : value < 150 ? "var(--accent)" : "var(--good)";
+  if (key === "social") return value < 20 ? "var(--danger)" : value < 50 ? "var(--accent)" : "var(--good)";
   return "var(--accent)";
 }
 

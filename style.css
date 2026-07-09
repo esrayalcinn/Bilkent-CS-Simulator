@@ -1,14 +1,16 @@
 :root {
-  --bg: #1b1f2b;
-  --panel: #232939;
-  --panel-alt: #2a3145;
-  --ink: #eef0f5;
-  --ink-soft: #9aa1b8;
-  --ink-faint: #656d85;
-  --accent: #e8a33d;
-  --good: #4fb286;
-  --danger: #e2574c;
-  --border: #363c52;
+  --bg: #181a1f; 
+  --panel: #21252b; 
+  --panel-alt: #282c34; 
+  
+  --ink: #e5e5eb; 
+  --ink-soft: #a9a9b5; 
+  --ink-faint: #747485; 
+  
+  --accent: #e8a33d; 
+  --good: #4fb286;  
+  --danger: #e2574c; 
+  --border: #3e4451; 
 
   --font-display: 'Space Grotesk', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
@@ -28,45 +30,55 @@ body {
   padding: 2.5rem 1.25rem;
 }
 
+CSS
 .app {
   width: 100%;
-  max-width: 720px;
+  max-width: 1300px;
 }
 
 .layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.75rem;
+  display: grid;
+  grid-template-columns: 290px minmax(650px, 900px); 
+  gap: 3.5rem;
+  justify-content: center; 
 }
 
 .sidebar {
-  width: 140px;
-  flex-shrink: 0;
-  padding-top: 2px;
+  width: 100%;
+  grid-column: 1;
+  padding-top: 0; 
+}
+
+.main {
+  grid-column: 2;
+  min-width: 0;
 }
 
 .sidebar-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--ink-faint);
-  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink); 
+  margin-top: 0; 
+  margin-bottom: 1.75rem;
+  line-height: 1;
 }
 
 .course-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px; /* Increased from 6px to give the bigger boxes room to breathe */
 }
 
 .course-item {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 16px; /* Increased font size from 12px */
   color: var(--ink-soft);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 8px; /* Slightly rounder edges for the larger box */
+  padding: 14px 16px; /* Increased padding makes the box much taller and roomier */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -75,6 +87,7 @@ body {
 .course-grade {
   color: var(--accent);
   font-weight: 500;
+  font-size: 16px; /* Ensures the grade scales up with the course name */
 }
 
 .choice-grade {
@@ -82,6 +95,17 @@ body {
   font-size: 12px;
   color: var(--ink-faint);
   float: right;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column; /* Stacks the buttons vertically */
+  gap: 12px; /* Adds space between the stacked buttons */
+  width: 100%;
+}
+
+.choices button {
+  width: 100%; /* Makes sure all buttons stretch to the same width */
 }
 
 button:disabled {
@@ -148,8 +172,8 @@ button:disabled:hover {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 12px;
   margin-bottom: 1.5rem;
 }
 
@@ -192,8 +216,12 @@ button:disabled:hover {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
   margin-bottom: 0.75rem;
+  
+  display: flex;
+  flex-direction: column;
+  height: auto; 
+  min-height: 280px;
 }
 
 .window-bar {
@@ -223,45 +251,47 @@ button:disabled:hover {
 }
 
 .window-body {
-  padding: 1.5rem;
+  padding: 1.5rem; 
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  text-align: center; 
+  
+  flex: 1; 
+  justify-content: center; 
+  overflow: hidden; 
 }
 
 .scene-text {
-  font-size: 15.5px;
+  font-size: 18px;
   line-height: 1.6;
   margin: 0 0 1.25rem;
   color: var(--ink);
 }
 
 .scene-result {
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.6;
   margin: 0 0 0.75rem;
-  color: var(--ink-soft);
+  color: var(--ink);
 }
 
 .scene-delta {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   color: var(--accent);
   margin: 0 0 1.5rem;
 }
 
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 button {
   font-family: var(--font-body);
-  font-size: 14.5px;
+  font-size: 16px; 
   color: var(--ink);
   background: var(--panel-alt);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px 14px;
-  text-align: left;
+  padding: 14px 16px;
+  text-align: left; 
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
@@ -357,6 +387,7 @@ button.primary {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--ink-faint);
+  min-height: 18px; 
 }
 
 .ending {
