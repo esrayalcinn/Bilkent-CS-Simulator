@@ -470,7 +470,7 @@ function renderStudyPicker(continueOverride) {
 
   const body = document.getElementById("window-body");
   body.innerHTML = `
-    <p class="scene-text">Which class are you spending today on?</p>
+    <p class="scene-text">Which course are you spending time on today?</p>
     <div class="choices">
       ${courses.map(c => {
         const g = letterGrade(state.courseProgress[c]);
@@ -483,9 +483,9 @@ function renderStudyPicker(continueOverride) {
       const course = btn.dataset.c;
       const choice = {
         courseTarget: course,
-        effects: { gpa: 0.05, sanity: -6 },
+        effects: { gpa: 0.05, sanity: -6, social: -10 },
         results: [
-          `You spend the day buried in ${course} problem sets. Progress, probably.`,
+          `You spend the day buried in ${course}'s tasks. Progress, probably.`,
           `${course} finally starts clicking. Or you're just too tired to notice it doesn't.`,
           `You review ${course} notes until the words stop meaning anything.`
         ]
