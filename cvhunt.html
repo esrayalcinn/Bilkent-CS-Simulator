@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Bullet Hell</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: #121214;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #ui-container {
+            width: 800px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #1a1a1e;
+            border: 4px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* The Player (The Resume) */
+        #player {
+            position: absolute;
+            bottom: 20px;
+            left: 375px;
+            width: 50px;
+            height: 65px;
+            background-color: #ffffff;
+            border: 2px solid #000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+            gap: 4px;
+            transition: width 0.2s, height 0.2s;
+        }
+
+        /* Resume lines effect */
+        .resume-line {
+            height: 4px;
+            background-color: #64748b;
+            width: 100%;
+        }
+        .resume-line.short { width: 60%; }
+
+        /* Obstacles & Items */
+        .obstacle {
+            position: absolute;
+            background-color: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .wall-obstacle {
+            background-color: #b91c1c;
+            border: 2px solid #f87171;
+        }
+
+        .certificate {
+            position: absolute;
+            background-color: #10b981;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Screens overlays */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 { color: #f87171; margin-bottom: 20px; }
+        p { margin-bottom: 20px; max-width: 500px; line-height: 1.5; }
+
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #2563eb; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-container">
+        <div>Time Surviving: <span id="timer-ui">60</span>s</div>
+        <div>Skills: <span id="skills-ui" style="color: #10b981;">0</span>/4 Required</div>
+        <div>Stamina: <span id="stamina-ui">3</span>/3</div>
+    </div>
+
+    <div id="game-container">
+        <div id="player">
+            <div class="resume-line" style="background-color: #334155; height: 6px;"></div>
+            <div class="resume-line"></div>
+            <div class="resume-line short"></div>
+            <div class="resume-line"></div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h1>RESUME BULLET HELL</h1>
+            <p>Dodge the rejections and survive for 60 seconds.<br><br>
+               <strong>THE CRATCH-22:</strong> You MUST collect at least 4 "Skills" to qualify for the position, but each skill expands your resume and makes your hitbox bigger!</p>
+            <button onclick="startGame()">Apply Instantly</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>APPLICATION REJECTED</h1>
+            <p id="rejection-text">"Thank you for your interest, but we have decided to move forward with candidates who closely match our needs..."</p>
+            <button onclick="startGame()">Try Another Company</button>
+        </div>
+
+        <div id="win-screen" class="overlay hidden">
+            <h1 style="color: #10b981;">OFFER LETTER RECEIVED!</h1>
+            <p>You had the skills AND you survived the pipeline. Welcome aboard as an underpaid corporate intern!</p>
+            <button onclick="startGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const timerUi = document.getElementById('timer-ui');
+        const staminaUi = document.getElementById('stamina-ui');
+        const skillsUi = document.getElementById('skills-ui');
+        
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const winScreen = document.getElementById('win-screen');
+        const rejectionText = document.getElementById('rejection-text');
+
+        // Game State Variables
+        let isPlaying = false;
+        let gameTime = 60; 
+        let stamina = 3;
+        let skillsCollected = 0;
+        let pX = 375; 
+        let playerWidth = 50;
+        let playerHeight = 65;
+        let keys = {};
+        
+        let obstacles = [];
+        let items = [];
+        
+        let gameInterval;
+        let spawnTimeout;
+
+        window.addEventListener('keydown', (e) => keys[e.key] = true);
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+        function startGame() {
+            isPlaying = true;
+            gameTime = 60;
+            stamina = 3;
+            skillsCollected = 0;
+            pX = 375;
+            playerWidth = 50;
+            playerHeight = 65;
+            
+            obstacles.forEach(o => o.el.remove());
+            items.forEach(i => i.el.remove());
+            obstacles = [];
+            items = [];
+
+            player.style.width = playerWidth + 'px';
+            player.style.height = playerHeight + 'px';
+            player.style.left = pX + 'px';
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            winScreen.classList.add('hidden');
+
+            timerUi.textContent = gameTime;
+            staminaUi.textContent = stamina;
+            skillsUi.textContent = skillsCollected;
+            skillsUi.style.color = '#10b981';
+
+            clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 1000 / 60);
+            
+            clearInterval(window.timerInterval);
+            window.timerInterval = setInterval(() => {
+                gameTime--;
+                timerUi.textContent = gameTime;
+                if (gameTime <= 0) endGame(true); // Reached the end of the timer
+            }, 1000);
+
+            clearTimeout(spawnTimeout);
+            spawnManager();
+        }
+
+        function updateGame() {
+            if (!isPlaying) return;
+
+            const speed = 7;
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) pX -= speed;
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) pX += speed;
+
+            if (pX < 0) pX = 0;
+            if (pX > (800 - playerWidth)) pX = 800 - playerWidth;
+            player.style.left = pX + 'px';
+
+            const pRect = player.getBoundingClientRect();
+
+            // Move & Collide Obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.y += obs.speed;
+                obs.el.style.top = obs.y + 'px';
+
+                let oRect = obs.el.getBoundingClientRect();
+                if (checkCollision(pRect, oRect)) {
+                    stamina--;
+                    staminaUi.textContent = stamina;
+                    obs.el.remove();
+                    obstacles.splice(i, 1);
+                    
+                    if (stamina <= 0) endGame(false); // Lost all stamina
+                    continue;
+                }
+
+                if (obs.y > 600) {
+                    obs.el.remove();
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // Move & Collide Certificates
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed;
+                item.el.style.top = item.y + 'px';
+
+                let iRect = item.el.getBoundingClientRect();
+                if (checkCollision(pRect, iRect)) {
+                    // Increment skills
+                    skillsCollected++;
+                    skillsUi.textContent = skillsCollected;
+                    if (skillsCollected >= 4) {
+                        skillsUi.style.color = '#34d399'; // Turn bright green when qualified
+                    }
+
+                    // Expand Player Resume Hitbox
+                    playerWidth += 12; // Slightly increased for extra risk
+                    playerHeight += 14;
+                    player.style.width = playerWidth + 'px';
+                    player.style.height = playerHeight + 'px';
+                    
+                    item.el.remove();
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > 600) {
+                    item.el.remove();
+                    items.splice(i, 1);
+                }
+            }
+        }
+
+        function checkCollision(rect1, rect2) {
+            return !(rect1.right < rect2.left || 
+                     rect1.left > rect2.right || 
+                     rect1.bottom < rect2.top || 
+                     rect1.top > rect2.bottom);
+        }
+
+        function spawnManager() {
+            if (!isPlaying) return;
+
+            let spawnRate = gameTime > 30 ? 500 : 250; 
+            
+            createObstacle();
+
+            if (Math.random() < 0.25) createWallObstacle();
+            
+            // Higher drop rate for skills early on so the player can collect them
+            if (Math.random() < 0.20) createCertificate();
+
+            spawnTimeout = setTimeout(spawnManager, spawnRate);
+        }
+
+        function createObstacle() {
+            const texts = ["REJECTION", "GHOSTED", "POSITION CLOSED", "NOT A FIT"];
+            const text = texts[Math.floor(Math.random() * texts.length)];
+            
+            const el = document.createElement('div');
+            el.className = 'obstacle';
+            el.innerText = text;
+            gameContainer.appendChild(el);
+
+            const width = 110; 
+            const x = Math.random() * (800 - width);
+            el.style.left = x + 'px';
+            el.style.top = '-30px';
+
+            obstacles.push({ el: el, y: -30, speed: 4 + Math.random() * 3 });
+        }
+
+        function createWallObstacle() {
+            const el = document.createElement('div');
+            el.className = 'obstacle wall-obstacle';
+            el.innerText = "REQUIRES 5+ YEARS EXP";
+            gameContainer.appendChild(el);
+
+            const width = 250; 
+            const x = Math.random() * (800 - width);
+            el.style.left = x + 'px';
+            el.style.top = '-40px';
+
+            obstacles.push({ el: el, y: -40, speed: 3 });
+        }
+
+        function createCertificate() {
+            const el = document.createElement('div');
+            el.className = 'certificate';
+            el.innerText = "SKILL";
+            gameContainer.appendChild(el);
+
+            const x = Math.random() * (800 - 35);
+            el.style.left = x + 'px';
+            el.style.top = '-40px';
+
+            items.push({ el: el, y: -40, speed: 3.5 });
+        }
+
+        function endGame(reachedTimeLimit) {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearInterval(window.timerInterval);
+            clearTimeout(spawnTimeout);
+
+            if (reachedTimeLimit) {
+                // Check if they met the 4-skill threshold
+                if (skillsCollected >= 4) {
+                    winScreen.classList.remove('hidden');
+                } else {
+                    // Rejected because they lacked skills
+                    rejectionText.innerText = `"Thank you for surviving our screening process. However, we noticed your resume lacks required credentials (${skillsCollected}/4 skills found). We require an entry-level candidate who already knows everything."`;
+                    gameOverScreen.classList.remove('hidden');
+                }
+            } else {
+                // Rejected because they lost all stamina (hit too many rejections)
+                rejectionText.innerText = `"Thank you for your interest, but we have decided to move forward with candidates who closely match our needs..."`;
+                gameOverScreen.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

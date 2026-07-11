@@ -162,6 +162,56 @@ CSS
   background: #313952;
 }
 
+.minigame-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 11, 14, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.minigame-frame-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.minigame-frame-wrap iframe {
+  display: block;
+  width: 800px;
+  height: 600px;
+  max-width: 90vw;
+  max-height: 70vh;
+  border: none;
+  border-radius: 8px;
+  background: #1a1a1e;
+}
+
+.minigame-status {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+  min-height: 18px;
+}
+
+.minigame-continue {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.minigame-continue.ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .choice-grade {
   font-family: var(--font-mono);
   font-size: 12px;

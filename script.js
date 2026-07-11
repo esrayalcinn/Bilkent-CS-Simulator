@@ -37,6 +37,7 @@ const state = {
   courseLastTouched: {},
   harassmentChain: false,
   completedEvents: [],
+  minigamePlayed: false,
   avatar: null // set during character creation: { hair, clothes, expression }
 };
 
@@ -284,7 +285,7 @@ const actions = [
   {
     id: "sleep",
     label: "Sleep",
-    effects: { gpa: -0.02, sanity: 20, social: -10 },
+    effects: { gpa: -0.02, sanity: 20, social: -10 , budget: 50},
     results: [
       "A full eight hours. It feels vaguely illegal at this point in the semester.",
       "You wake up before noon. A personal record.",
@@ -496,6 +497,11 @@ function rollScene() {
   const t = getTime();
 
   if (t.year > MAX_YEARS) {
+    if (!state.minigamePlayed) {
+      state.minigamePlayed = true;
+      renderMinigamePopup(renderEnding);
+      return;
+    }
     renderEnding();
     return;
   }
@@ -746,7 +752,7 @@ function renderStudyPicker(continueOverride) {
       const course = btn.dataset.c;
       const choice = {
         courseTarget: course,
-        effects: { gpa: 0.05, sanity: -6, social: -10 },
+        effects: { gpa: 0.05, sanity: -6, social: -10, budget: 20 },
         results: [
           `You spend the day buried in ${course}'s tasks. Progress, probably.`,
           `${course} finally starts clicking. Or you're just too tired to notice it doesn't.`,
@@ -864,6 +870,95 @@ function formatEffects(effects) {
 function advanceDay() {
   state.day += 1;
   rollScene();
+}
+
+// ---- mini-game popup (job hunt, shown once before the Year 2 ending) ----
+const MINIGAME_OUTCOMES = {
+  win: {
+    statusReady: "Offer received. Ready to move on.",
+    effects: { gpa: 0.05, budget: 300, sanity: 10 },
+    summary: "You landed the offer. GPA +0.05 · Budget +300 TL · Sanity +10"
+  },
+  "no-skills": {
+    statusReady: "Survived, but under-qualified. Ready to move on.",
+    effects: { budget: 50, sanity: -5 },
+    summary: "You survived but didn't qualify. Budget +50 TL · Sanity -5"
+  },
+  rejected: {
+    statusReady: "Rejected. Ready to move on.",
+    effects: { sanity: -15 },
+    summary: "Rejected outright. Sanity -15"
+  }
+};
+
+function renderMinigamePopup(onComplete) {
+  const MAX_TRIES = 15;
+  let finalResult = null;
+  let tries = 0;
+
+  const overlay = document.createElement("div");
+  overlay.className = "minigame-overlay";
+  overlay.innerHTML = `
+    <div class="minigame-frame-wrap">
+      <iframe id="minigame-frame" src="cvhunt.html"></iframe>
+    </div>
+    <div class="minigame-status" id="minigame-status">graduation is here — land the offer, or you're out after ${MAX_TRIES} attempts.</div>
+    <button class="primary minigame-continue" id="minigame-continue">continue →</button>`;
+  document.body.appendChild(overlay);
+
+  const statusEl = overlay.querySelector("#minigame-status");
+  const continueBtn = overlay.querySelector("#minigame-continue");
+
+  function handleMessage(e) {
+    const data = e.data;
+    if (!data || data.source !== "cvhunt") return;
+    const outcomeInfo = MINIGAME_OUTCOMES[data.outcome];
+    if (!outcomeInfo) return;
+
+    if (data.outcome === "win") {
+      finalResult = outcomeInfo;
+      statusEl.textContent = finalResult.statusReady;
+      continueBtn.classList.add("ready");
+      return;
+    }
+
+    tries++;
+    if (tries >= MAX_TRIES) {
+      finalResult = outcomeInfo;
+      statusEl.textContent = `Out of attempts (${MAX_TRIES}/${MAX_TRIES}). ${finalResult.statusReady}`;
+      continueBtn.classList.add("ready");
+    } else {
+      statusEl.textContent = `Attempt ${tries}/${MAX_TRIES} — didn't land it. Try again.`;
+    }
+  }
+  window.addEventListener("message", handleMessage);
+
+  continueBtn.onclick = () => {
+    if (!finalResult) return; // locked until a win or the 15th attempt
+    window.removeEventListener("message", handleMessage);
+    document.body.removeChild(overlay);
+
+    const effects = finalResult.effects;
+    if (effects.sanity) state.sanity += effects.sanity;
+    if (effects.budget) state.budget += effects.budget;
+    if (effects.social) state.social += effects.social;
+    if (effects.gpa) {
+      const targetCourse = pickFrom(currentCourses());
+      const masteryDelta = Math.round(effects.gpa * 100);
+      const cur = state.courseProgress[targetCourse] ?? BASE_MASTERY;
+      state.courseProgress[targetCourse] = Math.max(0, Math.min(100, cur + masteryDelta));
+    }
+    state.sanity = Math.max(0, Math.min(100, Math.round(state.sanity)));
+    state.budget = Math.round(state.budget);
+    state.social = Math.max(0, Math.min(100, Math.round(state.social)));
+
+    renderTopBar();
+    if (state.sanity <= 0) { renderBreakdown(); return; }
+    if (state.budget <= 0) { renderBankruptcy(); return; }
+    if (state.social <= 0) { renderIsolation(); return; }
+
+    renderResult(finalResult.summary, effects, onComplete);
+  };
 }
 
 function renderEnding() {
