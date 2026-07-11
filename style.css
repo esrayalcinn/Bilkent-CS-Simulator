@@ -405,3 +405,16 @@ button.primary {
 .ending-title.ending-danger {
   color: var(--danger);
 }
+.stat-up {
+  color: var(--good);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.stat-down {
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  margin: 2px 0;
+}

@@ -34,8 +34,11 @@ const state = {
   budget: 500,
   day: 1,
   courseProgress: {},
-  courseLastTouched: {}
+  courseLastTouched: {},
+  harassmentChain: false,
+  completedEvents: []
 };
+
 
 let eventPool = [];
 let recentEventIds = [];
@@ -44,6 +47,7 @@ let lastSemesterKey = null;
 let examQueue = [];
 let examFocusPoints = 0;
 let gameOver = false;
+let currentEvent = null;
 
 const actions = [
   {
@@ -82,6 +86,17 @@ async function boot() {
     eventPool = [];
   }
   rollScene();
+}
+
+function meetsRequirements(event) {
+  if (!event.requires) return true;
+  return event.requires.every(r => {
+    const val = state[r.stat];
+    if ("equals" in r) return val === r.equals;
+    if ("min" in r) return val >= r.min;
+    if ("max" in r) return val <= r.max;
+    return true;
+  });
 }
 
 // ---- derived time ----
@@ -286,6 +301,7 @@ function rollScene() {
 
   const courses = currentCourses();
   const eligible = eventPool.filter(e => {
+    if (!meetsRequirements(e)) return false;
     if (!e.repeatable && usedThisSemester.has(e.id)) return false;
     if (e.courses) return e.courses.some(c => courses.includes(c));
     if (e.course) return courses.includes(e.course);
@@ -293,17 +309,33 @@ function rollScene() {
   });
   const available = eligible.filter(e => !recentEventIds.includes(e.id));
   const pool = available.length ? available : eligible;
+
   const fireEvent = pool.length > 0 && Math.random() < EVENT_CHANCE;
 
   if (fireEvent) {
     const chosen = pool[Math.floor(Math.random() * pool.length)];
+    
+    currentEvent = chosen;
     usedThisSemester.add(chosen.id);
     recentEventIds.push(chosen.id);
     if (recentEventIds.length > 3) recentEventIds.shift();
+    
     const tag = chosen.course || (chosen.courses && chosen.courses[0]);
-    renderChoiceScene(chosen.text, chosen.choices, tag ? `${tag.toLowerCase()}_lab.log` : "random_event.log");
-  } else {
-    renderChoiceScene("Another day. What do you do with it?", actions, "daily_menu.sh");
+    renderChoiceScene(
+      chosen.text, 
+      chosen.choices, 
+      tag ? `${tag.toLowerCase()}_lab.log` : "random_event.log",
+      advanceDay
+    );
+  } 
+  else {
+    currentEvent = null; // Flush active event data
+    renderChoiceScene(
+      "Another day. What do you do with it?", 
+      actions, 
+      "daily_menu.sh",
+      advanceDay
+    );
   }
 }
 
@@ -517,9 +549,13 @@ function resolveChoice(choice) {
 
 function applyChoice(choice, continueOverride) {
   const { effects, result } = resolveChoice(choice);
+  if (currentEvent && currentEvent.id) {
+    state.completedEvents.push(currentEvent.id);
+  }
   if (effects.sanity) state.sanity += effects.sanity;
   if (effects.budget) state.budget += effects.budget;
   if (effects.social) state.social += effects.social;
+  if (effects.setHarassmentChain) state.harassmentChain = true;
   if (effects.gpa) {
     const targetCourse = choice.courseTarget || pickFrom(currentCourses());
     const masteryDelta = Math.round(effects.gpa * 100); 
@@ -549,14 +585,42 @@ function applyChoice(choice, continueOverride) {
   renderResult(result, effects, continueOverride || advanceDay);
 }
 
-function renderResult(text, effects, continueFn) {
+function renderResult(resultText, effects, onContinue) {
+  document.getElementById("window-title").textContent = "system_message.log";
   document.getElementById("hint").textContent = "";
+  
+  // FIXED: Removed the line that was wiping out the course sidebar view!
   const body = document.getElementById("window-body");
+  let effectsHtml = "";
+  
+  for (const stat in effects) {
+    if (stat === "gpa" || stat === "sanity" || stat === "budget" || stat === "social") {
+      const val = effects[stat];
+      if (val !== 0) {
+        const isPositive = val > 0;
+        const sign = isPositive ? "+" : "";
+        const className = isPositive ? "stat-up" : "stat-down";
+        const displayVal = stat === "gpa" ? val.toFixed(2) : Math.round(val);
+        const suffix = stat === "budget" ? " TL" : "";
+        
+        effectsHtml += `<div class="${className}">${stat.toUpperCase()}: ${sign}${displayVal}${suffix}</div>`;
+      }
+    }
+  }
+
   body.innerHTML = `
-    <p class="scene-result">${text}</p>
-    <p class="scene-delta">${formatEffects(effects)}</p>
-    <button class="primary" id="next-day">continue →</button>`;
-  document.getElementById("next-day").onclick = continueFn || advanceDay;
+    <div class="result-scene">
+      <p class="scene-result">${resultText}</p>
+      <div class="effects-list" style="margin: 15px 0;">
+        ${effectsHtml}
+      </div>
+      <button class="primary" id="continue-btn">continue →</button>
+    </div>
+  `;
+  
+  document.getElementById("continue-btn").onclick = () => {
+    onContinue();
+  };
 }
 
 function formatEffects(effects) {

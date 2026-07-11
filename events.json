@@ -169,6 +169,61 @@
     ]
   },
   {
+    "id": "homework_helper_intro",
+    "text": "A guy from your lecture approaches your desk. He claims he 'already knows coding inside out' and confidently offers to do your CS101 homework for you.",
+    "course": "CS101",
+    "choices": [
+      {
+        "label": "Accept his help",
+        "courseTarget": "CS101",
+        "effects": { "gpa": 0.04, "sanity": 5, "social": 7, "setHarassmentChain": true },
+        "results": ["He takes your laptop, fixes the code instantly, and winks. Easy points, but you feel a strange sense of dread."]
+      },
+      {
+        "label": "Ignore him and refuse",
+        "effects": { "sanity": -2 },
+        "results": ["You tell him you'd rather learn it yourself. He scoffs, murmurs something condescending, and walks away. Good riddance."]
+      }
+    ]
+},
+{
+    "id": "harassment_spam",
+    "requires": [{ "stat": "harassmentChain", "equals": true }],
+    "text": "The 'homework helper' guy is blowing up your phone at 2 AM, sending unsolicited paragraph-long critiques of your code and demanding you grab coffee to discuss it.",
+    "choices": [
+      {
+        "label": "Mute his notifications",
+        "effects": { "sanity": -5, "social": -2 },
+        "results": ["You mute him. The next day in the lab, he corners you angrily, asking why you're ignoring him. Your sanity drops."]
+      },
+      {
+        "label": "Politely reply to keep the peace",
+        "effects": { "sanity": -12 },
+        "results": ["You type a polite refusal. He takes this as encouragement and sends five more messages immediately. You can't escape."]
+      }
+    ]
+},
+{
+    "id": "harassment_gossip",
+    "requires": [
+      { "stat": "harassmentChain", "equals": true },
+      { "stat": "social", "min": 71 }
+    ],
+    "text": "A friend from your cohort pulls you aside near the department entrance, looking deeply annoyed on your behalf. They tell you: 'I just walked past that guy in the hallway, and he was loudly telling a group that you're totally into him and that you only came to him because you couldn't handle the CS assignments on your own.'",
+    "choices": [
+      {
+        "label": "Confront him publicly in the next lab",
+        "effects": { "sanity": -10, "social": 10 },
+        "results": ["You call him out in front of the whole class. He turns bright red, stammers, and completely folds. Everyone looks at him like he's a creep, boosting your social standing, but the drama fries your nerves."]
+      },
+      {
+        "label": "Ignore it and let your friends set the record straight",
+        "effects": { "sanity": 5, "social": -5 },
+        "results": ["You refuse to give him the attention. Your friends go around telling everyone the truth, shutting down his ego, though you still feel a bit frustrated keeping it quiet."]
+      }
+    ]
+},
+  {
     "id": "food_budget",
     "text": "You check your account balance before grocery shopping. It is lower than expected. It is always lower than expected.",
     "choices": [
