@@ -90,6 +90,78 @@ CSS
   font-size: 16px; /* Ensures the grade scales up with the course name */
 }
 
+.avatar-box {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 170px;
+}
+
+.avatar-box svg {
+  width: 128px;
+  height: 152px;
+  display: block;
+}
+
+.avatar-creator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+}
+
+.avatar-preview svg {
+  width: 160px;
+  height: 190px;
+  display: block;
+}
+
+.avatar-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.avatar-option-group {
+  text-align: left;
+}
+
+.avatar-option-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  text-transform: lowercase;
+  margin-bottom: 6px;
+}
+
+.avatar-option-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.avatar-option-row button {
+  flex: 1;
+  min-width: 90px;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.avatar-option-row button.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #313952;
+}
+
 .choice-grade {
   font-family: var(--font-mono);
   font-size: 12px;

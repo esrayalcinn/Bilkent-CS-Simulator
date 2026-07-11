@@ -36,8 +36,235 @@ const state = {
   courseProgress: {},
   courseLastTouched: {},
   harassmentChain: false,
-  completedEvents: []
+  completedEvents: [],
+  avatar: null // set during character creation: { hair, clothes, expression }
 };
+
+// ---- avatar (pixel-art, Stardew-style bust) ----
+const AVATAR_PX = 4; // base pixel size — every shape is grid-aligned, no curves/smoothing
+
+const AVATAR_OPTIONS = {
+  hair: [
+    { id: "pigtails", label: "Pigtails", color: "#7a4a2a", accent: "#e2574c" },
+    { id: "bob", label: "Bob", color: "#2b2320", accent: "#2b2320" },
+    { id: "ponytail", label: "Ponytail", color: "#d9a441", accent: "#e8a33d" },
+    { id: "bun", label: "Bun", color: "#a1462f", accent: "#a1462f" }
+  ],
+  clothes: [
+    { id: "dress", label: "Dress", color: "#e37fa0", shadow: "#c45f80" },
+    { id: "hoodie", label: "Hoodie", color: "#e8a33d", shadow: "#c9841f" },
+    { id: "overalls", label: "Overalls", color: "#4a6fa5", shadow: "#375684" },
+    { id: "sweater", label: "Sweater", color: "#4fb286", shadow: "#39946c" }
+  ],
+  expression: [
+    { id: "chill", label: "Chill" },
+    { id: "focused", label: "Focused" },
+    { id: "smirk", label: "Smirk" }
+  ]
+};
+
+// Builds a blocky pixel-art bust from the chosen config, modulated by current sanity/social.
+// Everything is drawn on a fixed grid as flat-color rects (crispEdges, no anti-aliasing) —
+// that's what gives it the chunky Stardew-portrait look instead of smooth shapes.
+// sanity < 35 -> "crazier" (red/glassy eyes, jagged mouth, stray hair, sweat drop)
+// sanity < 15 -> pushes further (fully bloodshot eyes)
+// social < 25 -> "antisocial" (half-lidded averted eyes, flat mouth, under-eye shadow, turned away)
+// social < 10 -> pushes further (bigger turn, arms crossed)
+function buildAvatarSVG(config, s) {
+  s = s || state;
+  const px = AVATAR_PX;
+  const crazy = s.sanity < 35;
+  const veryCrazy = s.sanity < 15;
+  const antisocial = s.social < 25;
+  const veryAntisocial = s.social < 10;
+
+  const hair = AVATAR_OPTIONS.hair.find(h => h.id === config.hair) || AVATAR_OPTIONS.hair[0];
+  const clothes = AVATAR_OPTIONS.clothes.find(c => c.id === config.clothes) || AVATAR_OPTIONS.clothes[0];
+
+  const skin = "#f2c9a1";
+  const eyeWhite = "#fff6ee";
+  const pupil = "#3a2c22";
+  const mouthColor = "#7a3b3b";
+  const blush = "#f0a3ab";
+
+  const rects = [];
+  const r = (gx, gy, gw, gh, color, opacity) => {
+    rects.push(`<rect x="${gx * px}" y="${gy * px}" width="${gw * px}" height="${gh * px}" fill="${color}"${opacity ? ` opacity="${opacity}"` : ""} shape-rendering="crispEdges"/>`);
+  };
+
+  // --- hair, back layer (bunches / tail sitting behind the head) ---
+  if (hair.id === "pigtails") {
+    r(7, 7, 3, 7, hair.color);
+    r(22, 7, 3, 7, hair.color);
+    r(7, 7, 3, 1, hair.accent);
+    r(22, 7, 3, 1, hair.accent);
+  } else if (hair.id === "ponytail") {
+    r(23, 10, 3, 9, hair.color);
+    r(23, 10, 3, 1, hair.accent);
+  } else if (hair.id === "bob") {
+    r(9, 9, 2, 13, hair.color);
+    r(21, 9, 2, 13, hair.color);
+  } else if (hair.id === "bun") {
+    r(13, 4, 6, 4, hair.color);
+  }
+
+  // --- body / clothes (tapered shoulders) ---
+  const bodyFill = clothes.id === "overalls" ? "#f5f0e6" : clothes.color;
+  r(11, 23, 10, 1, bodyFill);
+  r(9, 24, 14, 1, bodyFill);
+  for (let row = 25; row <= 31; row++) r(8, row, 16, 1, bodyFill);
+
+  if (clothes.id === "overalls") {
+    r(13, 23, 1, 9, clothes.color);
+    r(18, 23, 1, 9, clothes.color);
+    r(13, 26, 6, 4, clothes.color);
+  }
+  if (clothes.id === "hoodie") {
+    r(9, 22, 2, 2, clothes.shadow);
+    r(21, 22, 2, 2, clothes.shadow);
+  }
+  if (clothes.id === "sweater") {
+    r(14, 23, 4, 1, skin);
+  }
+  if (clothes.id === "dress") {
+    r(6, 32, 20, 1, clothes.shadow);
+    r(4, 33, 24, 1, clothes.shadow);
+  }
+
+  // --- head ---
+  r(13, 9, 6, 1, skin);
+  r(11, 10, 10, 1, skin);
+  for (let row = 11; row <= 18; row++) r(10, row, 12, 1, skin);
+  r(11, 19, 10, 1, skin);
+  r(12, 20, 8, 1, skin);
+  r(14, 21, 4, 2, skin); // neck
+
+  // --- hair, front layer (bangs / hairline) ---
+  r(12, 7, 8, 1, hair.color);
+  r(10, 8, 12, 1, hair.color);
+  r(10, 9, 3, 1, hair.color);
+  r(19, 9, 3, 1, hair.color);
+  if (hair.id === "bob") r(10, 9, 12, 1, hair.color);
+
+  // --- eyes ---
+  if (antisocial) {
+    const off = veryAntisocial ? -1 : 0;
+    r(12 + off, 14, 3, 1, pupil);
+    r(17 + off, 14, 3, 1, pupil);
+  } else if (veryCrazy) {
+    r(12, 13, 3, 3, "#e2574c");
+    r(17, 13, 3, 3, "#e2574c");
+    r(13, 14, 1, 1, "#1a1a1a");
+    r(18, 14, 1, 1, "#1a1a1a");
+  } else if (crazy) {
+    r(12, 13, 3, 3, eyeWhite);
+    r(17, 13, 3, 3, eyeWhite);
+    r(14, 13, 1, 1, "#e2574c");
+    r(12, 14, 1, 1, "#e2574c");
+    r(13, 14, 1, 1, pupil);
+    r(18, 14, 1, 1, pupil);
+  } else {
+    r(12, 13, 3, 3, eyeWhite);
+    r(17, 13, 3, 3, eyeWhite);
+    r(13, 14, 1, 1, pupil);
+    r(18, 14, 1, 1, pupil);
+  }
+
+  // --- blush ---
+  if (!antisocial) {
+    r(11, 16, 1, 1, blush);
+    r(20, 16, 1, 1, blush);
+  }
+
+  // --- mouth ---
+  if (veryCrazy || crazy) {
+    r(13, 17, 1, 1, mouthColor);
+    r(14, 16, 1, 1, mouthColor);
+    r(15, 17, 1, 1, mouthColor);
+    r(16, 16, 1, 1, mouthColor);
+    r(17, 17, 1, 1, mouthColor);
+    r(18, 16, 1, 1, mouthColor);
+  } else if (antisocial) {
+    r(14, 17, 4, 1, mouthColor);
+  } else if (config.expression === "smirk") {
+    r(14, 17, 3, 1, mouthColor);
+    r(17, 16, 1, 1, mouthColor);
+  } else if (config.expression === "focused") {
+    r(15, 17, 2, 1, mouthColor);
+  } else {
+    r(14, 17, 4, 1, mouthColor);
+    r(13, 16, 1, 1, mouthColor);
+    r(18, 16, 1, 1, mouthColor);
+  }
+
+  // --- mood overlays ---
+  if (crazy) {
+    r(22, 11, 1, 2, "#7fd8e8"); // sweat drop
+    r(9, 6, 1, 1, hair.color);  // stray hair
+    r(22, 6, 1, 1, hair.color);
+  }
+  if (antisocial) {
+    r(12, 16, 1, 1, "#000000", 0.15);
+    r(19, 16, 1, 1, "#000000", 0.15);
+  }
+  if (veryAntisocial) {
+    r(8, 29, 16, 2, clothes.shadow, 0.9); // crossed arms
+  }
+
+  const shiftX = antisocial ? (veryAntisocial ? -6 : -3) : 0;
+
+  return `
+  <svg viewBox="0 0 128 152" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <g transform="translate(${shiftX} 0)">
+      ${rects.join("")}
+    </g>
+  </svg>`;
+}
+
+function renderCharacterCreation() {
+  if (!state.avatar) state.avatar = { hair: "pigtails", clothes: "dress", expression: "chill" };
+
+  document.getElementById("window-title").textContent = "create_character.sh";
+  document.getElementById("hint").textContent = "";
+  document.getElementById("courses").innerHTML = "";
+  document.getElementById("avatar-box").innerHTML = "";
+
+  const optionRow = (group, options) => `
+    <div class="avatar-option-row">
+      ${options.map(o => `<button data-group="${group}" data-id="${o.id}" class="${state.avatar[group] === o.id ? "selected" : ""}">${o.label}</button>`).join("")}
+    </div>`;
+
+  const body = document.getElementById("window-body");
+  body.innerHTML = `
+    <div class="avatar-creator">
+      <p class="scene-text">Build your character.</p>
+      <div class="avatar-preview">${buildAvatarSVG(state.avatar, state)}</div>
+      <div class="avatar-options">
+        <div class="avatar-option-group">
+          <div class="avatar-option-label">hair</div>
+          ${optionRow("hair", AVATAR_OPTIONS.hair)}
+        </div>
+        <div class="avatar-option-group">
+          <div class="avatar-option-label">clothes</div>
+          ${optionRow("clothes", AVATAR_OPTIONS.clothes)}
+        </div>
+        <div class="avatar-option-group">
+          <div class="avatar-option-label">expression</div>
+          ${optionRow("expression", AVATAR_OPTIONS.expression)}
+        </div>
+      </div>
+      <button class="primary" id="confirm-avatar">looks good →</button>
+    </div>`;
+
+  body.querySelectorAll(".avatar-option-row button").forEach(btn => {
+    btn.onclick = () => {
+      state.avatar[btn.dataset.group] = btn.dataset.id;
+      renderCharacterCreation();
+    };
+  });
+
+  document.getElementById("confirm-avatar").onclick = () => rollScene();
+}
 
 
 let eventPool = [];
@@ -85,7 +312,7 @@ async function boot() {
     console.error("Could not load events.json — check it's in the same folder.", e);
     eventPool = [];
   }
-  rollScene();
+  renderCharacterCreation();
 }
 
 function meetsRequirements(event) {
@@ -138,6 +365,10 @@ function renderTopBar() {
       const g = letterGrade(state.courseProgress[c]);
       return `<div class="course-item">${c} <span class="course-grade" style="color:${gradeColor(g)}">${g}</span></div>`;
     }).join("");
+
+  if (state.avatar) {
+    document.getElementById("avatar-box").innerHTML = buildAvatarSVG(state.avatar, state);
+  }
 
   renderTrack(t);
 }
