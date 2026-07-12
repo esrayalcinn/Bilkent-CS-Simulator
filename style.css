@@ -194,6 +194,13 @@ CSS
   background: #1a1a1e;
 }
 
+/* NEW: dims the game once a final outcome (win, or out of attempts) is locked in,
+   reinforcing that pointer-events are disabled and no more retries are possible */
+.minigame-frame-wrap.locked iframe {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+}
+
 .minigame-status {
   font-family: var(--font-mono);
   font-size: 13px;

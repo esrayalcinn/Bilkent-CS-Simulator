@@ -385,26 +385,45 @@
         }
 
         function endGame(reachedTimeLimit) {
-            isPlaying = false;
-            clearInterval(gameInterval);
-            clearInterval(window.timerInterval);
-            clearTimeout(spawnTimeout);
+        isPlaying = false;
+        clearInterval(gameInterval);
+        clearInterval(window.timerInterval);
+        clearTimeout(spawnTimeout);
 
-            if (reachedTimeLimit) {
-                // Check if they met the 4-skill threshold
-                if (skillsCollected >= 4) {
-                    winScreen.classList.remove('hidden');
-                } else {
-                    // Rejected because they lacked skills
-                    rejectionText.innerText = `"Thank you for surviving our screening process. However, we noticed your resume lacks required credentials (${skillsCollected}/4 skills found). We require an entry-level candidate who already knows everything."`;
-                    gameOverScreen.classList.remove('hidden');
-                }
+        if (reachedTimeLimit) {
+            // Check if they met the 4-skill threshold
+            if (skillsCollected >= 4) {
+                winScreen.classList.remove('hidden');
+                notifyParent('win');           // NEW: tell the parent page you won
             } else {
-                // Rejected because they lost all stamina (hit too many rejections)
-                rejectionText.innerText = `"Thank you for your interest, but we have decided to move forward with candidates who closely match our needs..."`;
+                // Rejected because they lacked skills
+                rejectionText.innerText = `"Thank you for surviving our screening process. However, we noticed your resume lacks required credentials (${skillsCollected}/4 skills found). We require an entry-level candidate who already knows everything."`;
                 gameOverScreen.classList.remove('hidden');
+                notifyParent('no-skills');     // NEW: tell the parent page you survived but didn't qualify
             }
+        } else {
+            // Rejected because they lost all stamina (hit too many rejections)
+            rejectionText.innerText = `"Thank you for your interest, but we have decided to move forward with candidates who closely match our needs..."`;
+            gameOverScreen.classList.remove('hidden');
+            notifyParent('rejected');          // NEW: tell the parent page you got rejected outright
         }
+    }
+
+    // NEW FUNCTION: posts the game outcome up to the parent window (index_.html / script.js),
+    // which is listening for a message with source: 'cvhunt' to unlock its continue button
+    // and apply the corresponding stat effects (MINIGAME_OUTCOMES in script.js).
+    function notifyParent(outcome) {
+        if (window.parent) {
+            window.parent.postMessage({ source: 'cvhunt', outcome: outcome }, '*');
+        }
+    }
+
+    // NEW FUNCTION: posts the game outcome up to the parent window
+    function notifyParent(outcome) {
+        if (window.parent) {
+            window.parent.postMessage({ source: 'cvhunt', outcome: outcome }, '*');
+        }
+    }
     </script>
 </body>
 </html>

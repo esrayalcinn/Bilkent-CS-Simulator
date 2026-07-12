@@ -908,10 +908,18 @@ function renderMinigamePopup(onComplete) {
 
   const statusEl = overlay.querySelector("#minigame-status");
   const continueBtn = overlay.querySelector("#minigame-continue");
+  const frameWrap = overlay.querySelector(".minigame-frame-wrap");   // NEW: reference to the wrapper so we can lock it
+  const frame = overlay.querySelector("#minigame-frame");            // NEW: reference to the iframe itself
+
+  function lockGame() {
+    frame.style.pointerEvents = "none";
+    frameWrap.classList.add("locked");
+  }
 
   function handleMessage(e) {
     const data = e.data;
     if (!data || data.source !== "cvhunt") return;
+    if (finalResult) return; // NEW: already locked in — ignore any further messages from the iframe
     const outcomeInfo = MINIGAME_OUTCOMES[data.outcome];
     if (!outcomeInfo) return;
 
@@ -919,6 +927,7 @@ function renderMinigamePopup(onComplete) {
       finalResult = outcomeInfo;
       statusEl.textContent = finalResult.statusReady;
       continueBtn.classList.add("ready");
+      lockGame(); // NEW: block retrying once attempts are exhausted
       return;
     }
 
@@ -927,6 +936,7 @@ function renderMinigamePopup(onComplete) {
       finalResult = outcomeInfo;
       statusEl.textContent = `Out of attempts (${MAX_TRIES}/${MAX_TRIES}). ${finalResult.statusReady}`;
       continueBtn.classList.add("ready");
+      lockGame(); // NEW: block retrying after a win
     } else {
       statusEl.textContent = `Attempt ${tries}/${MAX_TRIES} — didn't land it. Try again.`;
     }
