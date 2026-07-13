@@ -38,7 +38,9 @@ const state = {
   harassmentChain: false,
   completedEvents: [],
   minigamePlayed: false,
-  avatar: null // set during character creation: { hair, clothes, expression }
+  avatar: null, // set during character creation: { hair, clothes, expression }
+  completedGradePoints: 0,
+  completedCredits: 0
 };
 
 // ---- avatar (pixel-art, Stardew-style bust) ----
@@ -425,21 +427,18 @@ function masteryToGPA(mastery) {
 // Calculates the real-time GPA using course credit weights
 function calculateProjectedGPA() {
   const courses = currentCourses();
-  if (courses.length === 0) return state.gpa; 
-
-  let totalGradePoints = 0;
-  let totalCredits = 0;
+  let totalGradePoints = state.completedGradePoints;
+  let totalCredits = state.completedCredits;
 
   courses.forEach(c => {
     const mastery = state.courseProgress[c] ?? BASE_MASTERY;
     const gradePoint = masteryToGPA(mastery);
-    const credits = COURSE_WEIGHTS[c] || 3; // defaults to 3 if a course is missing
-    
-    totalGradePoints += (gradePoint * credits);
+    const credits = COURSE_WEIGHTS[c] || 3;
+    totalGradePoints += gradePoint * credits;
     totalCredits += credits;
   });
 
-  return totalCredits === 0 ? 0 : totalGradePoints / totalCredits;
+  return totalCredits === 0 ? state.gpa : totalGradePoints / totalCredits;
 }
 
 function gradeColor(letter) {
@@ -679,10 +678,18 @@ function renderGradesPosted(t) {
 }
 
 function afterGrades(t) {
+  const courses = currentCourses();
+  courses.forEach(c => {
+    const mastery = state.courseProgress[c] ?? BASE_MASTERY;
+    const gradePoint = masteryToGPA(mastery);
+    const credits = COURSE_WEIGHTS[c] || 3;
+    state.completedGradePoints += gradePoint * credits;
+    state.completedCredits += credits;
+  });
+
   if (state.gpa < 2.0) {
     repeatYear(t);
-  } 
-  else {
+  } else {
     advanceDay();
   }
 }
