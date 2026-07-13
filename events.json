@@ -16,7 +16,7 @@
         "label": "Ask a friend nearby",
         "condition": {
           "stat": "social",
-          "min": 40,
+          "min": 50,
           "pass": {
             "effects": { "gpa": 0.03, "sanity": -2, "social": 5 },
             "results": [
@@ -102,7 +102,7 @@
   },
   {
     "id": "all_nighter",
-    "text": "The assignment is due at 12pm. It is currently 1am and you have completed roughly a third of it.",
+    "text": "The assignment is due at 8.30am. It is currently 1am and you have completed roughly a third of it.",
     "choices": [
       {
         "label": "Pull an all-nighter",
@@ -137,6 +137,46 @@
         "results": ["It was the right call for your mental but not for your potential"]
       }
     ]
+  },
+  {
+  "id": "mbg110_cheatsheet",
+  "text": "It is finally time to prepare a cheatsheet for the MBG110 course. You know that it covers half of the entire history of human evolution. Your hands are already cramping thinking about it. What do you do?",
+  "course": "MBG110",
+  "choices": [
+    {
+      "label": "The Microscopic Script: Write the entire textbook using a 0.3mm pen",
+      "effects": { "gpa": 0.08, "sanity": -18, "social": -5 },
+      "results": [
+        "You spend 8 hours writing font size 2 letters onto an A4 sheet under a magnifying glass. Your eyesight is permanently damaged and your wrists are shot, but you basically know the genome by heart now."
+      ]
+    },
+    {
+      "label": "The Strategic Summary: Focus only on major evolutionary milestones",
+      "effects": { "gpa": 0.03, "sanity": -6 },
+      "results": [
+        "You play it smart, outlining the key phylogenetic trees and mutations. You get a solid night's sleep, though you have a nagging feeling the professor is going to ask a hyper-specific question about mitochondria."
+      ]
+    },
+    {
+      "label": "The Forbidden Formula: Hide high-tech crib notes inside your smart watch (RISKY)",
+      "outcomes": [
+        {
+          "weight": 0.5,
+          "effects": { "gpa": 0.12, "sanity": -5 },
+          "results": [
+            "Your heart rate is 140 BPM the whole time, but the proctor doesn't suspect a thing. You scroll through the entire evolutionary timeline seamlessly. Pure, unearned academic victory."
+          ]
+        },
+        {
+          "weight": 0.5,
+          "effects": { "gpa": -0.3, "sanity": -25, "budget": -50 },
+          "results": [
+            "The proctor stands right behind you as your watch screen lights up with a diagram of Homo erectus. They confiscate the watch, give you an immediate zero, and send you packing with an official warning."
+          ]
+        }
+      ]
+    }
+  ]
   },
   {
     "id": "math102_class_question",
@@ -222,7 +262,7 @@
         "results": ["You refuse to give him the attention. Your friends go around telling everyone the truth, shutting down his ego, though you still feel a bit frustrated keeping it quiet."]
       }
     ]
-},
+  },
   {
     "id": "food_budget",
     "text": "You check your account balance before grocery shopping. It is lower than expected. It is always lower than expected.",
@@ -241,6 +281,93 @@
         "label": "Just starve",
         "effects": { "sanity": -25, "budget": 50 },
         "results": ["Not sure if that was the best idea"]
+      }
+    ]
+  },
+  {
+    "id": "cs224_fpga_crisis",
+    "course": "CS224",
+    "text": "It's 9 PM in the digital design lab. Your breadboard is a jungle of wires, and your FPGA board is throwing an unexplainable error code right before checkout. What do you do?",
+    "choices": [
+      {
+        "label": "Rewire the entire board from scratch",
+        "effects": { "gpa": 0.08, "sanity": -15, "social": -5 },
+        "results": ["You rip all the wires out and start over. It takes until 2 AM, but the LEDs finally blink correctly. Your back is destroyed."]
+      },
+      {
+        "label": "Mail the Lab Assistant asking for a tiny hint",
+        "effects": { "sanity": -10, "gpa":-0.05, "social": 5 },
+        "results": ["You swallow your pride but get no response. Why did you think TA would answer your mail at that hour anyway?"]
+      },
+      {
+        "label": "Gently shake the board and hope it's a loose contact (RISKY)",
+        "outcomes": [
+          { "weight": 0.4, "effects": { "gpa": 0.05, "sanity": 10 }, "results": ["Miracle! A loose wire snaps into place. The error disappears and you leave early."] },
+          { "weight": 0.6, "effects": { "gpa": -0.1, "sanity": -20 }, "results": ["A static shock fries a logic gate. The board smells faintly of burnt plastic. You get a zero for the lab wrapper."] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "campus_shuttle_rush",
+    "text": "It's 8:00 AM, raining, and you have a strict quiz at 8:30 AM. The shuttle arrives, but it is completely packed to the doors. What's the play?",
+    "choices": [
+      {
+        "label": "Squeeze inside like a sardine",
+        "effects": { "sanity": -10, "gpa": 0.02, "social": 5 },
+        "results": ["You force your way in. Your face is pressed against someone's wet umbrella for 5 minutes, but you make it to class on time."]
+      },
+      {
+        "label": "Give up and walk the hill in the rain",
+        "effects": { "sanity": -15, "social": -5, "gpa": -0.04 },
+        "results": ["You walk. You arrive completely drenched, freezing, and 10 minutes late. You missed the entire first section of the quiz."]
+      },
+      {
+        "label": "Call a taxi right now",
+        "effects": { "budget": -90, "sanity": 5, "gpa": 0.02 },
+        "results": ["It burns a huge hole in your weekly budget, but you ride to the department building in dry, warm comfort. Stress free."]
+      }
+    ]
+  },
+  {
+    "id": "coffee_overdose",
+    "courses": [
+      "CS101",
+      "CS102",
+      "CS201",
+      "cs202"
+    ],
+    "text": "You are crashing hard at the library, but you still have 40 slides of CS slides left to review. The espresso machine is staring at you.",
+    "choices": [
+      {
+        "label": "Buy a double-shot espresso",
+        "effects": { "budget": -65, "sanity": 10, "gpa": 0.03 },
+        "results": ["Your heart starts pounding to a techno rhythm, but the quicksort algorithm suddenly make complete sense. You push through."]
+      },
+      {
+        "label": "Power nap on the library desk for 15 minutes",
+        "effects": { "sanity": 5, "gpa": -0.02 },
+        "results": ["You wake up 45 minutes later with keyboard marks printed on your forehead and drool on your notebook. Total confusion."]
+      }
+    ]
+  },
+  {
+    "id": "online_homework",
+    "courses": [
+      "MATH101",
+      "PHYS101"
+    ],
+    "text": "Some of the courses you are now taking requires buying an online homework code to get full grades on homeworks.",
+    "choices": [
+      {
+        "label": "Buy the code from Meteksan",
+        "effects": { "budget": -200, "sanity": -8, "gpa": 0.1 },
+        "results": ["You bought the code from the store with the last money on you but at least you improved your grades."]
+      },
+      {
+        "label": "Don't buy and give up the homeworks",
+        "effects": { "sanity": -15, "gpa": -0.15  },
+        "results": ["You refuse to pay just to submit homework. Watching the SRS display 0/100 every single week kills your soul."]
       }
     ]
   }
