@@ -6,6 +6,7 @@ const EXAM_FOCUS_SLOTS = 2;  // how many courses you can "grind it out" for per 
 const BASE_MASTERY = 70;     // starting per-course grade bar (0-100), roughly a C- — matches the starting 2.0 GPA
 const NEGLECT_THRESHOLD = 5; // days a course can go untouched before its grade starts slipping
 const NEGLECT_RATE = 2;      // mastery points lost per day beyond the threshold
+const PROBATION_SANITY_PENALTY = 10;
 
 // courses per "year-semester" key
 const COURSES = {
@@ -655,10 +656,6 @@ function renderGradesPosted(t) {
     if (state.sanity <= 0) { renderBreakdown(); return; }
   }
 
-  const failText = failed.length
-    ? ` You failed ${failed.join(", ")} — it drags your average down hard, and you already feel it.`
-    : "";
-
   const choices = [
     {
       label: "Accept the curve",
@@ -674,7 +671,19 @@ function renderGradesPosted(t) {
     }
   ];
 
-  renderChoiceScene(`Semester ${t.semester} grades are posted.${failText}`, choices, "grades_posted.txt", () => afterGrades(t));
+  const showGradesScene = () => {
+      const warningText = (t.semester === 1 && state.gpa < 2.0)
+    ? `<br><span class="scene-warning">⚠ Your GPA is under 2.0 at the halfway point — bring it up next semester or you'll be repeating the year.</span>`
+    : "";
+    renderChoiceScene(`Semester ${t.semester} grades are posted.${warningText}`, choices, "grades_posted.txt", () => afterGrades(t));
+
+    if (failed.length > 0) {
+      renderFailedCoursePopup(failed, showGradesScene);
+    } 
+    else {
+      showGradesScene();
+    }
+  }
 }
 
 function afterGrades(t) {
@@ -687,7 +696,9 @@ function afterGrades(t) {
     state.completedCredits += credits;
   });
 
-  if (state.gpa < 2.0) {
+  const isEndOfYear = t.semester === 2;
+
+  if (isEndOfYear && state.gpa < 2.0) {
     repeatYear(t);
   } else {
     advanceDay();
@@ -695,24 +706,33 @@ function afterGrades(t) {
 }
 
 function repeatYear(t) {
-  state.sanity = Math.max(0, state.sanity - 20);
-  if (state.sanity <= 0) { renderTopBar(); renderBreakdown(); return; }
+  state.sanity = Math.max(0, state.sanity - PROBATION_SANITY_PENALTY);
+  renderTopBar();
 
   const newSemesterIndex = (t.year - 1) * 2;
   state.day = newSemesterIndex * SEMESTER_LENGTH + 1;
-  renderTopBar();
-  renderProbation(t);
+
+  renderProbationPopup(t, state.sanity <= 0);
 }
 
-function renderProbation(t) {
-  document.getElementById("window-title").textContent = "probation_notice.txt";
-  document.getElementById("hint").textContent = "";
-  const body = document.getElementById("window-body");
-  body.innerHTML = `
-    <p class="scene-text">Your GPA fell below 2.0 for year ${t.year}. Academic probation — you'll need to retake the year in full.</p>
-    <p class="scene-delta">sanity -20</p>
-    <button class="primary" id="restart-year">start the year again →</button>`;
-  document.getElementById("restart-year").onclick = rollScene;
+function renderProbationPopup(t, willBreakdown) {
+  const overlay = document.createElement("div");
+  overlay.className = "fail-popup-overlay";
+  overlay.innerHTML = `
+    <div class="fail-popup-card">
+      <div class="fail-popup-title" style="color:var(--danger)">academic probation</div>
+      <p class="fail-popup-note" style="font-size:14px; color:var(--ink-soft); margin-bottom:1rem;">
+        Your GPA fell below 2.0 for year ${t.year}. Same courses, same mistakes, less patience left for either.
+      </p>
+      <p class="fail-popup-red" style="display:block; margin-bottom:1.5rem;">sanity -${PROBATION_SANITY_PENALTY}</p>
+      <button class="primary" id="probation-continue">${willBreakdown ? "..." : "start the year again →"}</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById("probation-continue").onclick = () => {
+    document.body.removeChild(overlay);
+    willBreakdown ? renderBreakdown() : rollScene();
+  };
 }
 
 function renderChoiceScene(text, choices, windowTitle, continueOverride) {
@@ -832,8 +852,6 @@ function applyChoice(choice, continueOverride) {
 function renderResult(resultText, effects, onContinue) {
   document.getElementById("window-title").textContent = "system_message.log";
   document.getElementById("hint").textContent = "";
-  
-  // FIXED: Removed the line that was wiping out the course sidebar view!
   const body = document.getElementById("window-body");
   let effectsHtml = "";
   
@@ -1045,6 +1063,28 @@ function renderIsolation() {
       <button class="primary" id="restart-game">start over →</button>
     </div>`;
   document.getElementById("restart-game").onclick = () => location.reload();
+}
+
+function renderFailedCoursePopup(failedCourses, onContinue) {
+  const overlay = document.createElement("div");
+  overlay.className = "fail-popup-overlay";
+  overlay.innerHTML = `
+    <div class="fail-popup-card">
+      <div class="fail-popup-title">semester results</div>
+      <div class="fail-popup-list">
+        ${failedCourses.map(c => `
+          <div class="fail-popup-item">${c} — <span class="fail-popup-red">this course is failed</span></div>
+        `).join("")}
+      </div>
+      <p class="fail-popup-note">(a retake challenge may show up here in a future update)</p>
+      <button class="primary" id="fail-popup-continue">continue →</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById("fail-popup-continue").onclick = () => {
+    document.body.removeChild(overlay);
+    onContinue();
+  };
 }
 
 boot();

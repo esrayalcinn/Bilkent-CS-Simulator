@@ -547,3 +547,67 @@ button.primary {
   font-size: 14px;
   margin: 2px 0;
 }
+
+.fail-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 20, 0.75);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1.5rem;
+}
+
+.fail-popup-card {
+  background: var(--panel);
+  border: 1px solid var(--danger);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.fail-popup-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  text-transform: lowercase;
+}
+
+.fail-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.fail-popup-item {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.fail-popup-red {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.fail-popup-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-bottom: 1.5rem;
+}
+
+.scene-warning {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--accent);
+  font-weight: 600;
+}
