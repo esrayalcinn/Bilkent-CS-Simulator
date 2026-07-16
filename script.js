@@ -676,13 +676,13 @@ function renderGradesPosted(t) {
     ? `<br><span class="scene-warning">⚠ Your GPA is under 2.0 at the halfway point — bring it up next semester or you'll be repeating the year.</span>`
     : "";
     renderChoiceScene(`Semester ${t.semester} grades are posted.${warningText}`, choices, "grades_posted.txt", () => afterGrades(t));
+  }
 
-    if (failed.length > 0) {
-      renderFailedCoursePopup(failed, showGradesScene);
-    } 
-    else {
-      showGradesScene();
-    }
+  if (failed.length > 0) {
+    renderFailedCoursePopup(failed, showGradesScene);
+  } 
+  else {
+    showGradesScene();
   }
 }
 
