@@ -67,6 +67,37 @@ const AVATAR_OPTIONS = {
   ]
 };
 
+const STUDY_ACTIVITIES = {
+  // CS / Programming Classes
+  "CS101": "You open VS Code and debug your loops. After two hours, your terminal finally compiles without syntax errors.",
+  "CS102": "You work on completing your part of the group project. Your brain feels recursively fried.",
+  "CS201": "You map out memory allocations and write complex data structures. Linked lists and Stacks are haunting your screen.",
+  "CS202": "You spend three hours balancing an AVL tree on paper. The tree is now perfectly stable, but your own mental state remains highly unbalanced.",
+  "CS223": "You look at digital circuit designs and map logic gates. You're beginning to see binary in your sleep.",
+  "CS224": "You trace control signals through a single-cycle MIPS datapath. You spend an hour debugging your assembly only to realize you swapped 'lw' and 'sw' and completely wiped your registers.",
+
+  // Math / Science
+  "MATH101": "You fill three sheets of scrap paper solving limit proofs. Your hand hurts, but the calculus is starting to click.",
+  "MATH102": "You spend half the night running convergence tests on infinite series. You try the Ratio Test, the Root Test, and the Comparison Test, only to conclude that your GPA is rapidly diverging to absolute zero.",
+  "PHYS101": "You draw free-body diagrams of blocks sliding down frictionless inclined planes. You calculate forces, tension, and pulleys, but realize the only thing experiencing serious kinetic friction right now is your brain.",
+  "PHYS102": "You attempt to calculate the electric flux through a cylindrical Gaussian surface. You spend three hours integrating magnetic fields, but the only current flowing through you is pure, unadulterated stress.",
+  "MATH225": "You spend two hours row-reducing a massive matrix to reduced row echelon form, only to realize you made a sign error on step two. You start questioning if your life has any unique solutions.",
+  "MATH132": "You try to prove a combinatorics problem using the Pigeonhole Principle. Right now, those pigeons are nesting in your brain, causing complete mental chaos.",
+  "MBG110": "You cram everything from mitosis to evolution. At least you know the mitochondria is the powerhouse of the cell.",
+
+  // Humanities / English /Turkish
+  "ENG101": "You draft an argumentative essay structure, trying to sound as academic and analytical as possible.",
+  "ENG102": "You research peer-reviewed sources in the library database and practice pacing your presentation slides.",
+  "HUM111": "You read philosophical texts and write a deep-dive reflection paper on ancient societal developments.",
+  "HUM112": "You analyze historical documents and draft a comparative essay, questioning structural power dynamics. Prospero visiting you in your dream is just around the corner",
+  "TURK101": "You spend hours overanalyzing a Turkish literary classic just to hit your essay word count.",
+  "TURK102": "You stare at a painting, writing an art critique of beautifully structured nonsense.",
+  "HIST200": "Your group analyzes the interview transcript, cross-referencing it with historical sources for your final paper.",
+
+  // Fallback (if a class is missing)
+  "DEFAULT": "You sit down, open your notes, and review the slides for a few hours."
+};
+
 // Builds a blocky pixel-art bust from the chosen config, modulated by current sanity/social.
 // Everything is drawn on a fixed grid as flat-color rects (crispEdges, no anti-aliasing) —
 // that's what gives it the chunky Stardew-portrait look instead of smooth shapes.
@@ -777,14 +808,15 @@ function renderStudyPicker(continueOverride) {
   body.querySelectorAll("button").forEach(btn => {
     btn.onclick = () => {
       const course = btn.dataset.c;
+      
+      // Look up your customized course description, or fallback to a default
+      const customDescription = STUDY_ACTIVITIES[course] || `You sit down and review notes for ${course}.`;
+
       const choice = {
         courseTarget: course,
         effects: { gpa: 0.05, sanity: -6, social: -10, budget: 20 },
-        results: [
-          `You spend the day buried in ${course}'s tasks. Progress, probably.`,
-          `${course} finally starts clicking. Or you're just too tired to notice it doesn't.`,
-          `You review ${course} notes until the words stop meaning anything.`
-        ]
+        // Pass the custom description as the single result
+        results: [customDescription] 
       };
       applyChoice(choice, continueOverride);
     };
