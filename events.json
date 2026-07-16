@@ -374,7 +374,7 @@
   {
     "id": "insane_homework",
     "course":"CS202",
-    "text": "Once again you have a CS202 homework that can easily pass as a complete project. You have zero idea what you are doing and you know the FZ policy. You hopelessly check the forum only to see a comment from Mesih advising the use of an algo %90 of the population has never heard of.",
+    "text": "Once again you have a CS202 homework that can easily pass as a complete project. You have zero idea what you are doing and you know the FZ policy. You hopelessly check the forum only to see a comment from Mesih advising the use of an algo 99% of the population has never heard of.",
     "choices": [
       {
         "label": "Research the algo and give it a shot, accept the help",
@@ -407,11 +407,6 @@
         "results": ["You now know the book better than the author. The quiz was nothing to you. But all your other work and the sleep you sacrifised are waiting silently at a corner to bother you."]
       },
       {
-        "label": "Mail the Lab Assistant asking for a tiny hint",
-        "effects": { "sanity": -10, "gpa":-0.05, "social": 5 },
-        "results": ["You swallow your pride but get no response. Why did you think TA would answer your mail at that hour anyway?"]
-      },
-      {
         "label": "Believe in your ability to improvise and complete your other work (RISKY)",
         "outcomes": [
           { "weight": 0.4, "effects": { "gpa": 0.08, "sanity": 15 }, "results": ["The happinness of witnessing sleep and success coexisting brings you more joy than the grade itself."] },
@@ -422,7 +417,7 @@
   },
   {
     "id": "inferiority_attack",
-    "text": "You look to your right, somebody already has a startup business. You look to your left, another person is invited to Korea to present their paper. And they are all in your class.",
+    "text": "You look to your right, somebody already has a startup business. You look to your left, another person is invited to whatever place in the world to present their paper. And they are all in your class.",
     "choices": [
       {
         "label": "Just quit",
