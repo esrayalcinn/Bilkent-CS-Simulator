@@ -370,5 +370,54 @@
         "results": ["You refuse to pay just to submit homework. Watching the SRS display 0/100 every single week kills your soul."]
       }
     ]
+  },
+  {
+    "id": "insane_homework",
+    "course":"CS202",
+    "text": "Once again you have a CS202 homework that can easily pass as a complete project. You have zero idea what you are doing and you know the FZ policy. You hopelessly check the forum only to see a comment from Mesih advising the use of an algo %90 of the population has never heard of.",
+    "choices": [
+      {
+        "label": "Research the algo and give it a shot, accept the help",
+        "effects": {"sanity": -10, "social": -15 },
+        "results": ["You still have absolutely no clue on what is going on, starting over would take less time than trying to understand this."]
+      },
+      {
+        "label": "Laugh at the comment and get on with your work",
+        "effects": { "sanity": 20},
+        "results": ["Honestly it is the best possible reaction to anything happening around you in this department."]
+      },
+      {
+        "label": "Obviously this invoked rage, use it as motivation to smash that homework",
+        "effects": { "gpa": 0.1, "sanity": -10, "social": -10},
+        "results": ["Well at least it is over, hopefully you still have a shot at passing the course."]
+      }
+    ]
+  },
+  {
+    "id": "book_cram",
+    "courses": [
+      "HUM111",
+      "HUM112"
+    ],
+    "text": "It's 1AM and you have a quiz worth 10% of your grade tomorrow. But the material you are responsible for is 150 pages long. Of course, this is not the only work you need to get done for tomorrow.",
+    "choices": [
+      {
+        "label": "Just devote yourself entirely to the book and finish it.",
+        "effects": { "gpa": 0.08, "sanity": -15, "social": -8 },
+        "results": ["You now know the book better than the author. The quiz was nothing to you. But all your other work and the sleep you sacrifised are waiting silently at a corner to bother you."]
+      },
+      {
+        "label": "Mail the Lab Assistant asking for a tiny hint",
+        "effects": { "sanity": -10, "gpa":-0.05, "social": 5 },
+        "results": ["You swallow your pride but get no response. Why did you think TA would answer your mail at that hour anyway?"]
+      },
+      {
+        "label": "Believe in your ability to improvise and complete your other work (RISKY)",
+        "outcomes": [
+          { "weight": 0.4, "effects": { "gpa": 0.08, "sanity": 15 }, "results": ["The happinness of witnessing sleep and success coexisting brings you more joy than the grade itself."] },
+          { "weight": 0.6, "effects": { "gpa": -0.05, "sanity": -8 }, "results": ["Unfortunately your HUM professor is not so chill. At least you can still procrastinate until the exam..."] }
+        ]
+      }
+    ]
   }
 ]
