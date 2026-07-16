@@ -611,3 +611,29 @@ button.primary {
   color: var(--accent);
   font-weight: 600;
 }
+
+.restart-btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: lowercase;
+}
+
+.restart-btn:hover {
+  border-color: var(--danger); /* Glows terminal red on hover to show destructive action */
+  color: var(--ink);
+  background: rgba(226, 87, 76, 0.1);
+}
+
+.restart-icon {
+  font-size: 14px;
+}

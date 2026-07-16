@@ -1087,4 +1087,8 @@ function renderFailedCoursePopup(failedCourses, onContinue) {
   };
 }
 
+function restartGame() {
+  location.reload();
+}
+
 boot();
