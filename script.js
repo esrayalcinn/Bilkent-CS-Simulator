@@ -1,6 +1,6 @@
 const SEMESTER_LENGTH = 16;  // days per semester
 const MAX_YEARS = 2;         // scope: only years 1-2 are built right now
-const EVENT_CHANCE = 0.45;   // chance a random event fires on an ordinary day
+const EVENT_CHANCE = 0.65;   // chance a random event fires on an ordinary day
 
 const EXAM_FOCUS_SLOTS = 2;  // how many courses you can "grind it out" for per exam period 
 const BASE_MASTERY = 70;     // starting per-course grade bar (0-100), roughly a C- — matches the starting 2.0 GPA
