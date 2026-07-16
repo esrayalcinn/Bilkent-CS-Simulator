@@ -419,5 +419,36 @@
         ]
       }
     ]
+  },
+  {
+    "id": "inferiority_attack",
+    "text": "You look to your right, somebody already has a startup business. You look to your left, another person is invited to Korea to present their paper. And they are all in your class.",
+    "choices": [
+      {
+        "label": "Just quit",
+        "effects": { "sanity": 15, "gpa": -0.5, "social": 20},
+        "results": ["It's nice that you have come to peaceful terms about this issue enough to give up. Sadly, similar to real life, you can't just quit that easily. Game is still on."]
+      },
+      {
+        "label": "Go to your friends to rant about it.",
+        "condition": {
+          "stat": "social",
+          "min": 30,
+          "pass": {
+            "effects": {"gpa": -0.03, "sanity": 10, "social": 10 },
+            "results": ["At least you actually have the friends to talk about this even though your grades suffer a little."]
+          },
+          "fail": {
+            "effects": {"sanity": -8 },
+            "results": ["You have been to deep in your studies, nobody believes you actually struggle. This is just sad..."]
+          }
+        }
+      },
+      {
+        "label": "Try to shrug it off with your 'method of choice'",
+        "effects": { "budget": -100, "sanity": 15, "gpa": -0.04 },
+        "results": ["We all have our ways, this wouldn't be an option if it didn't work."]
+      }
+    ]
   }
 ]
