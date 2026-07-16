@@ -378,7 +378,7 @@
     "choices": [
       {
         "label": "Research the algo and give it a shot, accept the help",
-        "effects": {"sanity": -10, "social": -15 },
+        "effects": {"sanity": -10, "social": -15, "gpa": 0.08 },
         "results": ["You still have absolutely no clue on what is going on, starting over would take less time than trying to understand this."]
       },
       {
